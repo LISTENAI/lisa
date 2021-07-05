@@ -3,24 +3,41 @@ lisa
 
 Lisa 是 Lisa Framework 核心命令行工具，提供模版生成能力以及任务执行命令
 
+<!-- toc -->
 * [Usage](#usage)
 * [Commands](#commands)
-
+<!-- tocstop -->
+* [Usage](#usage)
+* [Commands](#commands)
+<!-- tocstop -->
 # Usage
-
+<!-- usage -->
 ```sh-session
 $ npm install -g @listenai/lisa
 $ lisa COMMAND
 running command...
 $ lisa (-v|--version|version)
-@listenai/lisa/1.4.7 darwin-x64 node-v12.3.1
+@listenai/lisa/1.4.8 win32-x64 node-v12.22.0
 $ lisa --help [COMMAND]
 USAGE
   $ lisa COMMAND
 ...
 ```
-
+<!-- usagestop -->
+```sh-session
+$ npm install -g @listenai/lisa
+$ lisa COMMAND
+running command...
+$ lisa (-v|--version|version)
+@listenai/lisa/1.0.2 darwin-x64 node-v12.3.1
+$ lisa --help [COMMAND]
+USAGE
+  $ lisa COMMAND
+...
+```
+<!-- usagestop -->
 # Commands
+<!-- commands -->
 * [`lisa build`](#lisa-build)
 * [`lisa create NAME`](#lisa-create-name)
 * [`lisa flash [FILEPATH]`](#lisa-flash-filepath)
@@ -56,6 +73,8 @@ OPTIONS
   --factory      打包factory包
 ```
 
+_See code: [src/commands/build.ts](https://github.com/LISTENAI/lisa/blob/v1.4.8/src/commands/build.ts)_
+
 ## `lisa create NAME`
 
 创建项目，例`lisa create newProject -t @generator/csk`
@@ -71,6 +90,8 @@ OPTIONS
   -t, --template=template  (required) 生成器模板
 ```
 
+_See code: [src/commands/create.ts](https://github.com/LISTENAI/lisa/blob/v1.4.8/src/commands/create.ts)_
+
 ## `lisa flash [FILEPATH]`
 
 烧录程序
@@ -85,6 +106,8 @@ ARGUMENTS
 OPTIONS
   -p, --part=part  选择烧录part文件，例：'-p master -p script'，默认全部烧录
 ```
+
+_See code: [src/commands/flash.ts](https://github.com/LISTENAI/lisa/blob/v1.4.8/src/commands/flash.ts)_
 
 ## `lisa help [COMMAND]`
 
@@ -112,6 +135,8 @@ USAGE
   $ lisa init
 ```
 
+_See code: [src/commands/init.ts](https://github.com/LISTENAI/lisa/blob/v1.4.8/src/commands/init.ts)_
+
 ## `lisa install [PKG]`
 
 安装依赖
@@ -127,6 +152,8 @@ OPTIONS
   -g, --global  全局安装依赖
 ```
 
+_See code: [src/commands/install.ts](https://github.com/LISTENAI/lisa/blob/v1.4.8/src/commands/install.ts)_
+
 ## `lisa list`
 
 列出项目已安装的Modules
@@ -135,6 +162,8 @@ OPTIONS
 USAGE
   $ lisa list
 ```
+
+_See code: [src/commands/list.ts](https://github.com/LISTENAI/lisa/blob/v1.4.8/src/commands/list.ts)_
 
 ## `lisa pipeline [ID]`
 
@@ -152,6 +181,8 @@ OPTIONS
   --json       json展示所有可执行的pipeline
 ```
 
+_See code: [src/commands/pipeline.ts](https://github.com/LISTENAI/lisa/blob/v1.4.8/src/commands/pipeline.ts)_
+
 ## `lisa plugins`
 
 list installed plugins
@@ -167,7 +198,7 @@ EXAMPLE
   $ lisa plugins
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v1.10.0/src/commands/plugins/index.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v1.10.1/src/commands/plugins/index.ts)_
 
 ## `lisa plugins:inspect PLUGIN...`
 
@@ -188,7 +219,7 @@ EXAMPLE
   $ lisa plugins:inspect myplugin
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v1.10.0/src/commands/plugins/inspect.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v1.10.1/src/commands/plugins/inspect.ts)_
 
 ## `lisa plugins:install PLUGIN...`
 
@@ -224,7 +255,7 @@ EXAMPLES
   $ lisa plugins:install someuser/someplugin
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v1.10.0/src/commands/plugins/install.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v1.10.1/src/commands/plugins/install.ts)_
 
 ## `lisa plugins:link PLUGIN`
 
@@ -251,7 +282,7 @@ EXAMPLE
   $ lisa plugins:link myplugin
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v1.10.0/src/commands/plugins/link.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v1.10.1/src/commands/plugins/link.ts)_
 
 ## `lisa plugins:uninstall PLUGIN...`
 
@@ -273,7 +304,7 @@ ALIASES
   $ lisa plugins:remove
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v1.10.0/src/commands/plugins/uninstall.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v1.10.1/src/commands/plugins/uninstall.ts)_
 
 ## `lisa plugins:update`
 
@@ -288,7 +319,7 @@ OPTIONS
   -v, --verbose
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v1.10.0/src/commands/plugins/update.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v1.10.1/src/commands/plugins/update.ts)_
 
 ## `lisa publish`
 
@@ -298,6 +329,8 @@ _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/
 USAGE
   $ lisa publish
 ```
+
+_See code: [src/commands/publish.ts](https://github.com/LISTENAI/lisa/blob/v1.4.8/src/commands/publish.ts)_
 
 ## `lisa search KEYWORD`
 
@@ -310,6 +343,8 @@ USAGE
 ARGUMENTS
   KEYWORD  关键字，例：'tool'
 ```
+
+_See code: [src/commands/search.ts](https://github.com/LISTENAI/lisa/blob/v1.4.8/src/commands/search.ts)_
 
 ## `lisa task [ID]`
 
@@ -328,6 +363,8 @@ OPTIONS
   --verbose    日志全量输出
 ```
 
+_See code: [src/commands/task.ts](https://github.com/LISTENAI/lisa/blob/v1.4.8/src/commands/task.ts)_
+
 ## `lisa uninstall [PKG]`
 
 移除依赖
@@ -343,6 +380,8 @@ OPTIONS
   -g, --global  全局移除依赖
 ```
 
+_See code: [src/commands/uninstall.ts](https://github.com/LISTENAI/lisa/blob/v1.4.8/src/commands/uninstall.ts)_
+
 ## `lisa update`
 
 更新lisa到最新版本
@@ -351,6 +390,8 @@ OPTIONS
 USAGE
   $ lisa update
 ```
+
+_See code: [src/commands/update.ts](https://github.com/LISTENAI/lisa/blob/v1.4.8/src/commands/update.ts)_
 
 ## `lisa upgrade`
 
@@ -364,6 +405,8 @@ OPTIONS
   --latest  依赖更新到最新版本
 ```
 
+_See code: [src/commands/upgrade.ts](https://github.com/LISTENAI/lisa/blob/v1.4.8/src/commands/upgrade.ts)_
+
 ## `lisa view PKG [FIELD]`
 
 查看pkg相关信息
@@ -376,3 +419,136 @@ ARGUMENTS
   PKG    包名，如`@listenai/lisa`
   FIELD  [default: versions] 查看包的相关信息，如`versions`,`dependencies`
 ```
+
+_See code: [src/commands/view.ts](https://github.com/LISTENAI/lisa/blob/v1.4.8/src/commands/view.ts)_
+<!-- commandsstop -->
+* [`lisa build`](#lisa-build)
+* [`lisa flash [FILEPATH]`](#lisa-flash-filepath)
+* [`lisa help [COMMAND]`](#lisa-help-command)
+* [`lisa install [PKG]`](#lisa-install-pkg)
+* [`lisa list`](#lisa-list)
+* [`lisa new [NAME]`](#lisa-new-name)
+* [`lisa search KEYWORD`](#lisa-search-keyword)
+* [`lisa uninstall [PKG]`](#lisa-uninstall-pkg)
+* [`lisa view PKG [VERSIONS]`](#lisa-view-pkg-versions)
+
+## `lisa build`
+
+固件开发项目编译打包
+
+```
+USAGE
+  $ lisa build
+
+OPTIONS
+  -r, --release  打包release包
+```
+
+## `lisa flash [FILEPATH]`
+
+烧录程序
+
+```
+USAGE
+  $ lisa flash [FILEPATH]
+
+ARGUMENTS
+  FILEPATH  烧录的lpk包绝对路径，非必填，默认烧录csk开发项目package后的lpk包
+
+OPTIONS
+  -p, --part=part  选择烧录part文件，例：'-p master -p script'，默认全部烧录
+```
+
+## `lisa help [COMMAND]`
+
+display help for lisa
+
+```
+USAGE
+  $ lisa help [COMMAND]
+
+ARGUMENTS
+  COMMAND  command to show help for
+
+OPTIONS
+  --all  see all commands in CLI
+```
+
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.2/src/commands/help.ts)_
+
+## `lisa install [PKG]`
+
+安装依赖
+
+```
+USAGE
+  $ lisa install [PKG]
+
+ARGUMENTS
+  PKG  资源包名，例：'nds-toolchain tool-cskburn'，不填时默认安装csk项目中的依赖
+
+OPTIONS
+  -g, --global  全局安装依赖
+```
+
+## `lisa list`
+
+列出项目已安装的Modules
+
+```
+USAGE
+  $ lisa list
+```
+
+## `lisa new [NAME]`
+
+新建项目
+
+```
+USAGE
+  $ lisa new [NAME]
+
+ARGUMENTS
+  NAME  项目名称
+
+OPTIONS
+  -f, --firmware=firmware  【芯片型号】@【固件版本】，例: 'source-csk4002@3.0.2'
+  -h, --hardware=hardware  [default: ls-kit] 版型模板，例: 'ls-kit'，默认值为 'ls-kit'
+```
+
+## `lisa search KEYWORD`
+
+根据关键字查找pkg
+
+```
+USAGE
+  $ lisa search KEYWORD
+
+ARGUMENTS
+  KEYWORD  关键字，例：'tool'
+```
+
+## `lisa uninstall [PKG]`
+
+移除依赖
+
+```
+USAGE
+  $ lisa uninstall [PKG]
+
+ARGUMENTS
+  PKG  资源包名，例：'@tool/nds-toolchain @tool/cskburn'
+
+OPTIONS
+  -g, --global  全局安装依赖
+```
+
+## `lisa view PKG [VERSIONS]`
+
+查看pkg可选版本号
+
+```
+USAGE
+  $ lisa view PKG [VERSIONS]
+```
+<!-- commandsstop -->

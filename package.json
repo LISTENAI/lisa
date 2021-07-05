@@ -98,7 +98,7 @@
     "posttest": "eslint . --ext .ts --config .eslintrc",
     "build": "tsc -b",
     "clean": "rm -rf lib",
-    "prepack": "npm run build && oclif-dev manifest",
+    "prepack": "npm run build && oclif-dev manifest && oclif-dev readme",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
     "version": "oclif-dev readme && git add README.md"
   },
