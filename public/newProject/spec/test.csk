@@ -1,0 +1,48 @@
+[auto_test]
+decrypt_key = ""
+project_name = "项目4"
+wework_appid = ""
+
+  [[auto_test.devices]]
+  address = 255
+  algo_record_format = "16k32bit6ch"
+  asr_exit_regex = ".+TIMEOUT.+"
+  baut_rate = 115_200
+  name = "测试设备"
+  recognize_regex = ".+?\\[TXT\\]: (.+?), \\[KID\\].+"
+  record_format = "16k32bit6ch"
+  save_audio = true
+  serial_port = "COM3"
+  wakeup_regex = ".+?\\[TXT\\]: (.+), \\[KID\\].+"
+
+  [[auto_test.tasks]]
+  name = "唤醒测试"
+  enable_wework_notification = false
+  recognize_timeout = 20
+  silence_duration = 3
+  type = "wake_up"
+  upload_oss_enabled = false
+  voice_directory = "./spec/dataset/audio_original"
+
+  [[auto_test.tasks]]
+  asr_online = false
+  enable_wework_notification = false
+  name = "识别测试"
+  recognize_one_shot = false
+  recognize_timeout = 20
+  silence_duration = 3
+  type = "recognize"
+  upload_oss_enabled = false
+  voice_directory = "./spec/dataset/audio_original"
+
+  [[auto_test.tasks]]
+  name = "误唤醒测试"
+  type = "mistake_wake_up"
+
+  [[auto_test.tasks]]
+  name = "回放采集"
+  enable_wework_notification = false
+  silence_duration = 3
+  type = "record_only"
+  upload_oss_enabled = true
+  voice_directory = "./spec/dataset/audio_original"

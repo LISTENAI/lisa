@@ -1,0 +1,40 @@
+type = ""
+pack_demo = "<%= pack_demo %>"
+
+[asr_model]
+mic_space = <%= asr_model.mic_space %>
+mic_type = "<%= asr_model.mic_type %>"
+
+[chip]
+id = <%= chip.id %>
+name = "<%= chip.name %>"
+description = """<%= chip.description %>"""
+
+[cmds_config]
+baudrate = "<%= cmds_config.baudrate %>"
+type = "<%= cmds_config.type %>"
+ctrl_mode = "<%= cmds_config.ctrl_mode %>"
+
+[esr_config]
+app_mode = <%= esr_config.app_mode %>
+esr_timeout = <%= esr_config.esr_timeout %>
+
+[firmware]
+id = <%= firmware.id %>
+version = "<%= firmware.version %>"
+description = """<%= firmware.description %>"""
+
+[hardware]
+id = <%= hardware.id %>
+name = "<%= hardware.name %>"
+description = """<%= firmware.description %>"""
+
+[scene]
+id = <%= scene.id %>
+name = "<%= scene.name %>"
+description = """<%= firmware.description %>"""
+
+[speaker]
+speed = 1.08
+vcn = "x2_yezi"
+volume = 10

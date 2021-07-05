@@ -1,0 +1,39 @@
+type = ""
+pack_demo = "default"
+
+[asr_model]
+mic_space = 35
+mic_type = "模拟麦克风"
+
+[chip]
+id = ""
+name = ""
+description = ""
+
+[cmds_config]
+baudrate = "115200"
+type = "hex"
+
+[esr_config]
+app_mode = "3"
+esr_timeout = "20"
+
+[firmware]
+id = ""
+version = ""
+description = ""
+
+[hardware]
+id = ""
+name = ""
+description = ""
+
+[scene]
+id = ""
+name = ""
+description = ""
+
+[speaker]
+speed = 1.08
+vcn = "x2_yezi"
+volume = 10

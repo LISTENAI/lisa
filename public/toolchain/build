@@ -1,0 +1,8 @@
+@ECHO OFF
+ECHO START
+SET CSK_TOOLCHAIN=#CSK_TOOLCHAIN#
+SET CSK_APP_DIR=#CSK_APP_DIR#
+CD #CSK_DIR#
+call build/env.bat
+bash.exe -c ./#BUILD#.sh
+echo compile end!

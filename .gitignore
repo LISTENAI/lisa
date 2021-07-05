@@ -1,0 +1,13 @@
+*-debug.log
+*-error.log
+**.lock
+/lib
+/out
+/.nyc_output
+/dist
+/package-lock.json
+/tmp
+node_modules
+log
+.lisa
+target/

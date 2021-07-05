@@ -1,0 +1,17 @@
+{
+  "extends": [
+    "oclif",
+    "oclif-typescript"
+  ],
+  "rules": {
+    "no-negated-condition":"off",
+    "node/no-unsupported-features/node-builtins":"warn",
+    "@typescript-eslint/no-this-alias": [
+      "error",
+      {
+        "allowDestructuring": true, // Allow `const { props, state } = this`; false by default
+        "allowedNames": ["self"] // Allow `const self = this`; `[]` by default
+      }
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+#!/usr/bin/env node
+const Sentry = require('@sentry/node')
+Sentry.init({
+  dsn: 'http://043e699dd29e4c6fb1de231a729f8aa4@sentry.iflyos.cn/95',
+  tracesSampleRate: 1.0,
+})
+
+const logSymbols = require('log-symbols')
+
+require('@oclif/command').run()
+.then(
+  require('@oclif/command/flush')
+)
+.catch(
+  // require('@oclif/errors/handle')
+  error => {
+    // console.log(error)
+    Sentry.captureException(error, () => {
+      if (error.message.indexOf('EEXIT') < 0) {
+        console.log(`${logSymbols.error} ${error.message}`)
+      }
+    })
+  }
+)
+

@@ -1,0 +1,207 @@
+# 通过application，你可以迅速适配自己的硬件板型，其中包括：产测配置、业务配置、硬件配置、驱动配置。
+# 关于应用相关配置，你可以访问 https://open.listenai.com/application_config 阅读更详细的指南。
+# 关于产测相关配置，你可以访问 https://open.listenai.com/factory_config 阅读更详细的指南。
+#
+#产测配置
+[factory]
+
+# 开关，决定是否进入产测模式。
+enable = 【factory.enable】
+
+# 检查进入产测模式的触发电平条件，false：低电平；true：高电平。
+check_enter_level = 【factory.check_enter_level】
+
+# 预留配置，暂未使用。检测进入产测模式触发电平的延迟时间。
+check_gpios_delay = 【factory.check_gpios_delay】
+
+
+#业务配置
+[business]
+
+# 协议模式
+# private：私有串口协议；适用于演示demo或带单工（只能发不能收）私有串口协议场景。
+# custom：自定义开发模式；适用于双工（能发能收）私有串口协议场景。
+# public：聆思公版串口协议；目前离在线方案推荐使用该协议。
+# 注意：该配置以工具配置为准，配置位置在config/base.csk。
+#
+sys_mode = ""
+
+# 开机提示音数组，随机播放数组中的一条音频。
+# 注意：该配置以工具配置为准，配置位置在config/interact.csk。
+welcome = []
+
+# 播音音量，有效范围：1-10，0表示关闭语音。
+# 注意：该配置以工具配置为准，配置位置在config/base.csk。
+play_vol = 5
+
+
+# 不建议修改！
+cae_beam = 【business.cae_beam】
+
+  # 识别配置
+  [business.asr]
+
+  # 触发进入识别模式的唤醒词id。
+  # 注意：该配置以工具配置为准，配置位置在config/interact.csk。
+  enter_asr = []
+
+  # 触发退出识别模式的命令词id。
+  exit_asr = []
+
+  # 不建议修改，交互模式：
+  # 0：只唤醒不识别；
+  # 1：只识别不唤醒；
+  # 2：一次唤醒一次识别；
+  # 3：多轮交互，一次唤醒后多次识别。
+  # 注意：该配置以工具配置为准，配置位置在config/base.csk。
+  #
+  asr_mode = 3
+
+  # 识别超时时间，超时后进入待唤醒状态，单位：秒。
+  # 注意：该配置以工具配置为准，配置位置在config/base.csk。
+  timeout = 20
+
+  # 不建议修改！该配置指定识别模式是否循环多次。
+  # true：单次模式，识别出结果后，进入空闲状态；
+  # false：循环模式，识别出结果后，再次启动识别，循环直到接收到其它需要切换状态的指令才会退出识别。
+  # 注意：该配置以工具配置为准，配置位置在config/base.csk。
+  #
+  loop_mode = true
+
+  # 配置通讯方式：
+  # 0：不需要通讯；
+  # 1：仅串口通讯；
+  # 2：仅红外通讯；
+  # 3：串口和红外同时通讯。
+  # 注意：该配置以工具配置为准，配置位置在config/base.csk。
+  #
+  cmd_send_mode = 【business.asr.cmd_send_mode】
+
+  【business.cv】
+
+# 硬件配置
+[hw_config]
+
+# i2s输出开关。
+i2s_out_enable = 【hw_config.i2s_out_enable】
+
+# i2s输出音频通道配置数组，只支持4路通道配置。参数为通道编号：
+# 1：mic 1原始音频；
+# 2：mic 2原始音频；
+# 3：ref 1音频；
+# 4：ref 2音频；
+# 5：CAE 1后音频；
+# 6：CAE 2后音频；
+# 7：测试音频；
+# 8：送云端识别音频。
+#
+i2s_out_chs = 【hw_config.i2s_out_chs】
+
+# usb模式配置。
+[hw_config.usb_mode]
+
+# uac功能开关。
+uac_in_enable = 【hw_config.usb_mode.uac_in_enable】
+
+# 不建议修改！uac输出音频映射编号。1和2用于离线识别，3用于云端识别。
+uac_in_channel = 【hw_config.usb_mode.uac_in_channel】
+
+# usb录音开关，只有在uac_in_enable = false时可用。
+custom_enable = 【hw_config.usb_mode.custom_enable】
+
+# 麦克风配置
+[hw_config.mic]
+
+# 设置麦克风类型：
+# amic：使用模拟麦；
+# dmic：使用数字麦。
+#
+type = "amic"
+
+# 设置麦间距，取值范围35-110，单位：mm。
+dist = 35.0
+
+#驱动配置
+[driver]
+
+  # 日志串口配置
+  [driver.uart_logs]
+
+  # 选择日志串口端口，有效值：0、1、2。
+  uart = 【driver.uart_logs.uart】
+
+  # 设置日志串口波特率，有效取值：9600/19200/57600/115200/345600
+  baudrate = 【driver.uart_logs.baudrate】
+
+  # 通讯串口配置
+  [driver.uart_ctrl]
+
+  # 选择通讯串口端口，有效值：0、1、2。
+  uart = 【driver.uart_ctrl.uart】
+
+  # 通信串口波特率，有效取值：2400/4800/9600/19200/38400/57600/115200/345600
+  baudrate = 【driver.uart_ctrl.baudrate】
+
+  # 声卡配置
+  [driver.codec]
+
+  # 无需修改，codec-i2s端口。
+  i2s = 【driver.codec.i2s】
+
+  # 选择coedc-i2c端口，有效取值：0、1 。
+  i2c = 【driver.codec.i2c】
+
+    # 声卡-adc配置
+    [driver.codec.adc]
+
+    # 选择adc硬件型号
+    adc_type = "【driver.codec.adc.adc_type】"
+
+    # adc通道增益配置数组，配置规则如下：
+    # 第一个参数，MIC1增益，有效范围：1-10（数值越大增益越高，0表示关闭）
+    # 第二个参数，MIC2增益，有效范围：1-10（数值越大增益越高，0表示关闭）
+    # 第三个参数，REF1增益，有效范围：1-10（数值越大增益越高，0表示关闭）
+    # 第四个参数，REF2增益，有效范围：1-10（数值越大增益越高，0表示关闭）
+    #
+    # 注意事项：
+    # 1、需要根据产品实际场景，通过录音分析（可使用Adobe Audition等工具），调整每个通道的增益；
+    # 2、需要保证在设备播放最大音频时，每个通道的录音不会出现截幅问题；
+    # 3、为了保证语音识别效果，在各通道录音不截幅情况下，需要尽量提高每个通道的增益。
+    #
+	  adc_gain = 【driver.codec.adc.adc_gain】
+
+    # 麦克风通道配置数组，最多支持两个参数：
+    # 数组第一个参数代表mic 1对应的adc通道编号；
+    # 数组第二个参数代表mic 2对应的adc通道编号。
+    #
+	  mic_chs = 【driver.codec.adc.mic_chs】
+
+    # 参考通道配置数组，最多支持两个参数：
+    # 数组第一个参数代表ref 1对应的adc通道编号；
+    # 数组第二个参数代表ref 2对应的adc通道编号。
+    #
+	  ref_chs = 【driver.codec.adc.ref_chs】
+
+  # 红外驱动配置
+  [driver.infrared]
+
+  # 配置红外pwm驱动端口号，有效取值：0、1。
+  # pwm0支持channel 0、channel 1、channel 2、channel 3；
+  # pwm1支持channel 4、channel 5。
+  #
+  pwm = 0
+
+  # ch=channel
+  # 如果pwm=0，红外PWM通道channel，pwm0支持channel 0、channel 1、channel 2、channel 3；
+  # 如果pwm=1，红外PWM通道channel，pwm1支持channel 4、channel 5。
+  #
+  ch = 1
+
+  # 配置红外发射频率，单位：Hz。
+  freq = 38000
+
+  # 单条命令连续发送次数
+  resend = 8
+
+  # 红外信号pwm占空比
+  duty = 160

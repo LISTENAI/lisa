@@ -1,0 +1,3 @@
+target
+optimize/audio_record/**
+spec/dataset/audio_original/**

@@ -1,0 +1,70 @@
+# 通过hardware.toml，你可以对CSK芯片引脚进行配置，完成产测引脚配置、外围器件配置等工作。
+# 关于外围器件引脚配置，你可以访问 https://open.listenai.com/peripheral_config 阅读更详细的指南。
+# 关于产测相关配置，你可以访问 https://open.listenai.com/factory_config 阅读更详细的指南。
+#
+# 硬件信息
+boardname = "【boardname】"
+conf_version = "【conf_version】"
+description = "【description】"
+
+# 【以下是hardware.toml所用到的配置项】
+# tag：表示pin脚的标记名，用于代码中匹配；
+# pin：表示引脚编号；
+# mux：表示功能选择，具体功能请查看具体芯片Datasheet。下载地址：
+# dir：表示IO方向，true：输出；false：输入；
+# def：表示默认电平（仅对dir为true时有意义）；
+# rev：表示逻辑电平和物理电平的匹配，true表示逻辑电平和物理电平一致，false表示逻辑电平和物理电平相反。
+#
+# 产测模式下的引脚配置
+[factory_gpio]
+
+  # 通过此引脚来决定是否进入产测模式；
+  # 只能配1个引脚；
+  # 只能为输入dir = false
+	【factory_gpio.check_enter】
+
+  # 用来输出音频检测结果（依次为 MIC1,MIC2,REF 信号检测结果）；只能配3个引脚，只能为输出（dir = true）。
+  【factory_gpio.check_record】
+
+  # 用来检测 GPIO 的硬件连通性，CSK 控制这些引脚的电平，最多可配置10个引脚，只能为输出（dir = true）。
+  【factory_gpio.check_gpios】
+
+# 外围器件引脚配置
+# uart预留3组
+# i2c预留2组
+# i2s预留1组
+# spi预留1组
+#
+[peripheral]
+
+  # urat引脚配置
+  【peripheral.uart】
+
+  # i2c引脚配置
+  【peripheral.i2c】
+
+  # i2s引脚配置
+  【peripheral.i2s】
+
+  # spi引脚配置
+  【peripheral.spi】
+
+  # 系统就绪的io输出引脚配置
+  [[peripheral.gpio]]
+  tag = "【peripheral.gpio.rdy.tag】"
+  pin = 【peripheral.gpio.rdy.pin】
+  mux = 【peripheral.gpio.rdy.mux】
+  dir = 【peripheral.gpio.rdy.dir】
+  def = 【peripheral.gpio.rdy.def】
+  rev = 【peripheral.gpio.rdy.rev】
+
+  # PA的使能引脚配置
+  [[peripheral.gpio]]
+  tag = "【peripheral.gpio.amp.tag】"
+  pin = 【peripheral.gpio.amp.pin】
+  mux = 【peripheral.gpio.amp.mux】
+  dir = 【peripheral.gpio.amp.dir】
+  def = 【peripheral.gpio.amp.def】
+  rev = 【peripheral.gpio.amp.rev】
+
+  【peripheral.pwm】

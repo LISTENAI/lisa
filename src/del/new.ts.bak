@@ -1,0 +1,220 @@
+/* eslint-disable node/no-unsupported-features/node-builtins */
+import {Command, flags} from '@oclif/command'
+// import * as fs from 'fs'
+import * as path from 'path'
+import cpExec from '../util/cp-exec'
+import Utils from '../lib/utils'
+
+import defaultPath from '../util/default-path'
+import DefaultPath from '../util/default-path'
+
+import * as logSymbols from 'log-symbols'
+
+import cli from 'cli-ux'
+import * as inquirer from 'inquirer'
+
+import {fs, runner} from '@listenai/lisa_core'
+
+export default class New extends Command {
+  static description = '新建项目';
+
+  static hidden = true;
+
+  static args = [
+    {
+      name: 'name',
+      required: false,
+      description: '项目名称',
+    },
+  ];
+
+  static flags = {
+    // firmware: flags.string({
+    //   char: 'f',
+    //   description: "【芯片型号】@【固件版本】，例: 'source-csk4002@3.0.2' ",
+    //   default: '',
+    // }),
+    // hardware: flags.string({
+    //   char: 'h',
+    //   description: "版型模板，例: 'ls-kit'，默认值为 'ls-kit' ",
+    //   default: 'ls-kit',
+    // }),
+  };
+
+  async setEnvironment(name: string, hardware: any) {
+    const pjPath = DefaultPath.cwd(name)
+
+    const confPath = path.join(pjPath, 'config/environment/conf.json')
+    const hardwarePath = path.join(
+      pjPath,
+      'config/environment/hardware.toml'
+    )
+    const applicationPath = path.join(
+      pjPath,
+      'config/environment/application.toml'
+    )
+
+    if (hardware.configUrl) {
+      const downRes = await Utils.downloadFile(
+        hardware.configUrl,
+        confPath,
+        {}
+      )
+      const conf = Utils.requireNoCache(confPath)
+      if (downRes) {
+        const hardwareJson = conf.hardware
+        if (hardwareJson) {
+          let hardwareToml = fs.readFileSync(path.join(__dirname, '../../public/hardwareDemo.toml')).toString()
+          hardwareToml = Utils.deepReplace(hardwareToml, hardwareJson)
+          hardwareToml = hardwareToml.replace(/【[^【]+(?=】)】/g, '')
+          fs.writeFileSync(
+            hardwarePath,
+            hardwareToml
+          )
+        }
+
+        const applicationJson = conf.private
+        if (applicationJson) {
+          if (applicationJson.factory) {
+            applicationJson.factory.enable = applicationJson.factory.enable || false
+            applicationJson.factory.check_enter_level = applicationJson.factory.check_enter_level || false
+            applicationJson.factory.check_gpios_delay = applicationJson.factory.check_gpios_delay || false
+          } else {
+            applicationJson.factory = {
+              enable: false,
+              check_enter_level: false,
+              check_gpios_delay: false,
+            }
+          }
+
+          if (applicationJson.hw_config) {
+            applicationJson.hw_config.i2s_out_enable = applicationJson.hw_config.i2s_out_enable || false
+          }
+
+          let applicationToml = fs.readFileSync(path.join(__dirname, '../../public/applicationDemo.toml')).toString()
+          applicationToml = Utils.deepReplace(applicationToml, applicationJson)
+          applicationToml = applicationToml.replace(/【[^【]+(?=】)】/g, '')
+          fs.writeFileSync(
+            applicationPath,
+            applicationToml
+          )
+        }
+        if (applicationJson || hardwareJson) {
+          // 可以拆开就不保存conf.json
+          if (fs.existsSync(confPath)) {
+            fs.unlinkSync(confPath)
+          }
+        }
+      } else {
+        this.log(`下载${hardware.configUrl}出错，将尝试重新下载。`)
+      }
+    }
+  }
+
+  async run() {
+    const self = this
+    const {args} = this.parse(New)
+
+    let projectName = args.name
+    const projectNamePattern = /^[\u4e00-\u9fa5_a-zA-Z0-9-]+$/
+
+    const isBlank = true
+    // const isCsk: boolean = flags.type === 'csk'
+
+    if (!projectName) {
+      projectName = await cli.prompt('请输入项目名称')
+    }
+    if (!projectNamePattern.test(projectName)) {
+      return this.error('项目名称不能包含空格或特殊符号')
+    }
+
+    Utils.getGlobal('application').addContext('lisaNew', {
+      projectName: projectName,
+    })
+
+    if (isBlank) {
+      return runner(Utils.getGlobal('application').pipeline.new.tasks.join(',')).then(() => {
+        self.log(`  ${logSymbols.success} success:已创建空白项目 ${projectName ? 'cd ' + projectName : ''}`)
+      }).catch((error: any) => {
+        self.error(error)
+      })
+    }
+
+    // const pattern = /^@source\/csk\d+@.+$/
+    // let firmware = ''
+    // let chip = ''
+    // let sourcePkg = ''
+    // if (!flags.firmware) {
+    //   const sourceStr = (await cpExec.get('lisa search @source -l', defaultPath.cwd()) as unknown as string)
+    //   const sources = JSON.parse(sourceStr).map((source: { NAME: any }) => {
+    //     return {
+    //       name: source.NAME.replace('@source/csk', ''),
+    //     }
+    //   })
+    //   const chipResponse: any = await inquirer.prompt(
+    //     [
+    //       {
+    //         name: 'chip',
+    //         message: '选择芯片方案',
+    //         type: 'list',
+    //         choices: sources,
+    //       },
+    //     ]
+    //   )
+    //   chip = chipResponse.chip
+    //   const sourceVersionsStr = (await cpExec.get(`lisa view @source/csk${chip} -l`, defaultPath.cwd()) as unknown as string)
+    //   const sourceVersions = JSON.parse(sourceVersionsStr).map((item: any) => {
+    //     return {
+    //       name: item,
+    //     }
+    //   })
+    //   const firmwareResponse: any = await inquirer.prompt(
+    //     [
+    //       {
+    //         name: 'firmware',
+    //         message: '选择基础固件版本',
+    //         type: 'list',
+    //         choices: sourceVersions,
+    //       },
+    //     ]
+    //   )
+    //   firmware = firmwareResponse.firmware
+    //   sourcePkg = `@source/csk${chip}@${firmware}`
+    // } else {
+    //   this.log(logSymbols.info, ` 芯片方案及固件版本: ${flags.firmware}`)
+    //   if (!pattern.test(flags.firmware)) {
+    //     return this.error('芯片方案及固件版本命名不合法')
+    //   }
+    //   chip = flags.firmware.split('@')[1].split('source/csk')[1]
+    //   firmware = flags.firmware.split('@')[2]
+    //   sourcePkg = flags.firmware
+    // }
+    // let hardware = ''
+    // if (!flags.hardware) {
+    //   const responses: any = await inquirer.prompt(
+    //     [
+    //       {
+    //         name: 'hardware',
+    //         message: '选择版型模版',
+    //         type: 'list',
+    //         choices: [{name: 'ls-kit'}, {name: '不要选'}],
+    //       },
+    //     ]
+    //   )
+    //   hardware = responses.hardware
+    // } else {
+    //   hardware = flags.hardware
+    //   this.log(logSymbols.info, ` 版型: ${flags.hardware}`)
+    // }
+
+    // application.newCtx = {
+    //   projectName, sourcePkg, chip, firmware, hardware,
+    // }
+
+    // runner(application.pipeline.new_csk.tasks.join(',')).then(() => {
+    //   self.log(logSymbols.success, ` success:创建项目成功 cd ${projectName}`)
+    // }).catch((error: any) => {
+    //   self.error(error)
+    // })
+  }
+}

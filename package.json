@@ -1,0 +1,106 @@
+{
+  "name": "@listenai/lisa",
+  "description": "Lisa 是 Lisa Framework 核心命令行工具，提供模版生成能力以及任务执行命令",
+  "version": "1.4.8",
+  "author": "geekBoom.Zhao <zbzhao@listenai.com>",
+  "bin": {
+    "lisa": "./bin/run"
+  },
+  "bugs": "https://github.com/LISTENAI/lisa/issues",
+  "dependencies": {
+    "@iarna/toml": "^2.2.5",
+    "@listenai/lisa_core": "^1.1.6",
+    "@oclif/command": "^1",
+    "@oclif/config": "^1",
+    "@oclif/plugin-help": "^3",
+    "@oclif/plugin-plugins": "^1.10.0",
+    "@oclif/plugin-warn-if-update-available": "^1.7.0",
+    "@sentry/node": "5.20.0",
+    "@listenai/cskburn": "^1.9.6",
+    "@types/adm-zip": "^0.4.33",
+    "@types/configstore": "^4.0.0",
+    "@types/inquirer": "^7.3.1",
+    "@types/listr": "^0.14.2",
+    "@types/node-fetch": "^2.5.8",
+    "@types/request": "^2.48.5",
+    "@types/shelljs": "^0.8.8",
+    "adm-zip": "^0.5.2",
+    "cli-ux": "^5.5.1",
+    "compressing": "^1.5.1",
+    "configstore": "^5.0.1",
+    "crc": "^3.8.0",
+    "iconv-lite": "^0.6.2",
+    "inquirer": "^7.3.3",
+    "lisa": "^1.4.0",
+    "listr": "^0.14.3",
+    "log-symbols": "^4.0.0",
+    "node-fetch": "^2.6.1",
+    "request": "^2.88.2",
+    "shelljs": "^0.8.4",
+    "tslib": "^1"
+  },
+  "devDependencies": {
+    "@oclif/dev-cli": "^1",
+    "@oclif/test": "^1",
+    "@types/chai": "^4",
+    "@types/fs-extra": "8.1.0",
+    "@types/mocha": "^5",
+    "@types/node": "^10",
+    "@types/tmp": "^0.2.0",
+    "chai": "^4",
+    "eslint": "^5.13",
+    "eslint-config-oclif": "^3.1",
+    "eslint-config-oclif-typescript": "^0.1",
+    "fs-extra": "8.1.0",
+    "globby": "^10",
+    "mocha": "^5",
+    "nyc": "^14",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.3"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "files": [
+    "/bin",
+    "/lib",
+    "/public",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json"
+  ],
+  "homepage": "https://github.com/LISTENAI/lisa.git",
+  "keywords": [
+    "oclif"
+  ],
+  "license": "MIT",
+  "main": "lib/index.js",
+  "oclif": {
+    "commands": "./lib/commands",
+    "bin": "lisa",
+    "plugins": [
+      "@oclif/plugin-help",
+      "@oclif/plugin-warn-if-update-available",
+      "@oclif/plugin-plugins"
+    ],
+    "hooks": {
+      "init": [
+        "./lib/hooks/init/load",
+        "./lib/hooks/init/oauth",
+        "./lib/hooks/init/event-upload"
+      ]
+    },
+    "warn-if-update-available": {
+      "message": "lisa 可从 <%= chalk.greenBright(config.version) %> 更新到 <%= chalk.greenBright(latest) %> ，请输入命令 lisa update 进行更新。"
+    }
+  },
+  "repository": "https://github.com/LISTENAI/lisa.git",
+  "scripts": {
+    "posttest": "eslint . --ext .ts --config .eslintrc",
+    "build": "tsc -b",
+    "clean": "rm -rf lib",
+    "prepack": "npm run build && oclif-dev manifest",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "version": "oclif-dev readme && git add README.md"
+  },
+  "types": "lib/index.d.ts"
+}
