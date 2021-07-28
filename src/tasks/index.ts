@@ -1,11 +1,16 @@
 import * as path from 'path'
-require(path.join(__dirname, './create/init'))()
-require(path.join(__dirname, './create/install'))()
-require(path.join(__dirname, './init/ready'))()
-require(path.join(__dirname, './init/install'))()
 
-require(path.join(__dirname, './flash/compress'))()
-require(path.join(__dirname, './flash/parseJson'))()
-require(path.join(__dirname, './flash/parseZip'))()
+const models = [
+  './create/init',
+  './create/install',
+  './init/ready',
+  './init/install',
+  './flash/compress',
+  './flash/parseJson',
+  './flash/parseZip',
+  './lpk-package'
+]
 
-require(path.join(__dirname, './lpk-package'))()
+models.forEach((module_path) => {
+  import(path.join(__dirname, module_path)).then((lib) => lib())
+})
