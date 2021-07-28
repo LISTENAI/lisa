@@ -90,6 +90,8 @@
       ]
     },
     "warn-if-update-available": {
+      "timeoutInDays": 7,
+      "registry": "https://registry.npm.taobao.org",
       "message": "lisa 可从 <%= chalk.greenBright(config.version) %> 更新到 <%= chalk.greenBright(latest) %> ，请输入命令 lisa update 进行更新。"
     }
   },

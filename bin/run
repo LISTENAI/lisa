@@ -6,7 +6,6 @@ Sentry.init({
 })
 
 const logSymbols = require('log-symbols')
-
 require('@oclif/command').run()
 .then(
   require('@oclif/command/flush')

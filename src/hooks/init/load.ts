@@ -1,11 +1,17 @@
 import {Hook} from '@oclif/config'
 import {load, Application, argv} from '@listenai/lisa_core'
 import * as path from 'path'
+const debug = require('debug')('update-check')
 
 const initLoad: Hook<'init'> = async function (options) {
+
   if (!['-v', '--version', '-h', '--help', 'install', 'search', 'view'].includes(options.id)) {
-    require(path.join(__dirname, '../../tasks'))
+    import(path.join(__dirname, '../../tasks'))
+      .then(() => debug("imported tasks done"))
+      .catch(err => debug(err))
+
     try {
+      //TODO: 后续把lisa core中的load改造成异步模式
       const application: any = load().application
       application.cacheDir = options.config.cacheDir
       application.argv = argv()
