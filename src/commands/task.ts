@@ -1,6 +1,5 @@
 import {Command, flags} from '@oclif/command'
-import {runner, application} from '@listenai/lisa_core'
-import {cli} from 'cli-ux'
+import lisa from '@listenai/lisa_core'
 
 export default class Task extends Command {
   static strict = false
@@ -32,9 +31,9 @@ export default class Task extends Command {
   };
 
   async run() {
+    const {cli, application} = lisa
     const {argv, flags} = this.parse(Task)
-    // application.argv = options.argv
-    // console.log(this.parse(Task))
+
     if (flags.table) {
       const tasks = Object.keys(application.tasks).map((taskId: string) => {
         return Object.assign(application.tasks[taskId], {id: taskId})
@@ -57,7 +56,7 @@ export default class Task extends Command {
       })
       this.log(JSON.stringify(tasks))
     } else if (argv.length > 0) {
-      runner(argv.join(','), {}, flags.verbose || false)
+      lisa.runner(argv.join(','), {}, flags.verbose || process.env.LISA_TASK_VERBOSE === 'true' || false)
     } else {
       this.error('请输入至少一个可执行的task')
     }

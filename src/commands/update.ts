@@ -1,25 +1,30 @@
 import {Command} from '@oclif/command'
-import {cmd} from '@listenai/lisa_core'
-import cli from 'cli-ux'
+import lisa from '@listenai/lisa_core'
+import compare from '../util/compare'
 
 export default class Update extends Command {
   static description = '更新lisa到最新版本'
 
   async run() {
+    const {cli, cmd} = lisa
     cli.action.start('正在更新到最新版本...')
-    const oldVersion = await cmd('lisa', ['--version'])
-    let registry = 'https://registry.npm.taobao.org'
-    if (process.env.LISA_ENV === 'debug') {
-      this.log('当前为DEBUG环境，将更新到lpm的最新版本')
-      registry = 'https://registry-lpm.listenai.com'
-    }
-    await cmd('npm', ['install', '@listenai/lisa@latest', '-g', `--registry=${registry}`])
-    const newVersion = await cmd('lisa', ['--version'])
-    if (oldVersion.stdout === newVersion.stdout) {
-      cli.action.stop('当前已是最新版本')
-    } else {
+    const nowVersion = this.config.version
+    this.debug('当前版本 %s', nowVersion)
+    const res = await cmd('npm', ['view', '@listenai/lisa', 'dist-tags'])
+
+    try {
+      const distTags = JSON.parse(res.stdout.replace(/(\s*?{\s*?|\s*?,\s*?)(['"])?([a-zA-Z0-9]+)(['"])?:/g, '$1"$3":').replace(/'/g, '"'))
+      const latestVersion = distTags.latest
+      this.debug('最新版本 %s', latestVersion)
+
+      if (compare(nowVersion, latestVersion) >= 0) {
+        return cli.action.stop(`已是最新版本 ${nowVersion}`)
+      }
+
+      await cmd('npm', ['install', '@listenai/lisa@latest', '-g'])
       cli.action.stop('成功')
+    } catch (error) {
+      this.debug(error)
     }
-    this.log(newVersion.stdout)
   }
 }

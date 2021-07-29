@@ -2,6 +2,7 @@
 
 function split(flag: boolean, version: string) {
   version = String(version)
+
   let result = []
   if (flag) {
     const tail = version.split('-')[1]
@@ -17,8 +18,7 @@ function split(flag: boolean, version: string) {
 
 function convertToNumber(arr: Array<any>) {
   return arr.map(function (el) {
-    // eslint-disable-next-line radix
-    return isNaN(el) ? el : parseInt(el)
+    return isNaN(el) ? el : parseInt(el, 10)
   })
 }
 
@@ -38,23 +38,20 @@ function compare(v1: string, v2: string) {
     if (i === 3 && (arr1[i] === undefined || arr2[i] === undefined)) {
       if (arr1[i] === undefined && isNaN((arr2[i] as unknown as number))) {
         return 1
-      // eslint-disable-next-line max-statements-per-line
-      } if (isNaN(arr1[i] as unknown as number) && arr2[i] === undefined) {
+      }
+      if (isNaN(arr1[i] as unknown as number) && arr2[i] === undefined) {
         return -1
       }
     }
     if (arr1[i] === undefined) {
       return -1
     }
-
     if (arr2[i] === undefined) {
       return 1
     }
-
     if (arr1[i] > arr2[i]) {
       return 1
     }
-
     if (arr1[i] < arr2[i]) {
       return -1
     }
