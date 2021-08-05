@@ -62,10 +62,7 @@ export default class Create extends Command {
 
     runner(Utils.getPipelineTask('create')).then(async () => {
       const execStr = [
-        "const core=require('@listenai/lisa_core');",
-        `core.application.argv = ${JSON.stringify(argv())};`.replace(/"/g, "'"),
-        `const main=require('${generate}');`,
-        'main.default(core);',
+        `require('${generate}').default();`,
       ]
       await cmd('node', ['-e', `"${execStr.join('')}"`], {
         cwd: Utils.getGlobal('fs').project.root,
