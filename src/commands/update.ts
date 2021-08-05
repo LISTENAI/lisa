@@ -1,6 +1,7 @@
 import {Command} from '@oclif/command'
 import lisa from '@listenai/lisa_core'
 import compare from '../util/compare'
+import lpminit from '../util/lpminit'
 
 export default class Update extends Command {
   static description = '更新lisa到最新版本'
@@ -10,6 +11,7 @@ export default class Update extends Command {
     cli.action.start('正在更新到最新版本...')
     const nowVersion = this.config.version
     this.debug('当前版本 %s', nowVersion)
+    await lpminit()
     const res = await cmd('npm', ['view', '@listenai/lisa', 'dist-tags'])
 
     try {

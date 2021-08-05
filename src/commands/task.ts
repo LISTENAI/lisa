@@ -1,5 +1,6 @@
 import {Command, flags} from '@oclif/command'
 import lisa from '@listenai/lisa_core'
+import {getTaskDict} from '@listenai/lisa_core'
 
 export default class Task extends Command {
   static strict = false
@@ -31,12 +32,14 @@ export default class Task extends Command {
   };
 
   async run() {
-    const {cli, application} = lisa
+    const {cli} = lisa
     const {argv, flags} = this.parse(Task)
 
+    const taskDict = getTaskDict()
+
     if (flags.table) {
-      const tasks = Object.keys(application.tasks).map((taskId: string) => {
-        return Object.assign(application.tasks[taskId], {id: taskId})
+      const tasks = Object.keys(taskDict).map((taskId: string) => {
+        return Object.assign(taskDict[taskId], {id: taskId})
       })
       cli.table(tasks, {
         id: {
@@ -51,8 +54,8 @@ export default class Task extends Command {
         ...flags, // parsed flags
       })
     } else if (flags.json) {
-      const tasks = Object.keys(application.tasks).map((taskId: string) => {
-        return Object.assign(application.tasks[taskId], {id: taskId})
+      const tasks = Object.keys(taskDict).map((taskId: string) => {
+        return Object.assign(taskDict[taskId], {id: taskId})
       })
       this.log(JSON.stringify(tasks))
     } else if (argv.length > 0) {

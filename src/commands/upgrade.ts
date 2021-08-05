@@ -1,5 +1,6 @@
 import {Command} from '@oclif/command'
 import lisa from '@listenai/lisa_core'
+import lpminit from '../util/lpminit'
 
 export default class Upgrade extends Command {
   static description = '更新当前项目依赖'
@@ -12,13 +13,13 @@ export default class Upgrade extends Command {
     const hasRegistry = argv.some(item => item.startsWith('--registry='))
 
     const command = ['upgrade'].concat(argv)
-
+    cli.action.start('更新当前项目依赖', '正在更新', {stdout: true})
     if (!hasRegistry) {
       command.push(`--registry=${application.registryUrl}`)
+      await lpminit()
     }
 
     this.debug(command.join(' '))
-    cli.action.start('更新当前项目依赖', '正在更新', {stdout: true})
     try {
       this.debug('yarn', command.join(' '))
       const code = await exec('yarn', command, undefined, line => {

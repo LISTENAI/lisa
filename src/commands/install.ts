@@ -1,5 +1,7 @@
 import {Command} from '@oclif/command'
 import lisa from '@listenai/lisa_core'
+import {loadTaskDict} from '@listenai/lisa_core'
+import lpminit from '../util/lpminit'
 
 export default class Install extends Command {
   static description = '安装依赖'
@@ -23,12 +25,13 @@ export default class Install extends Command {
 
     const command = (globalInstall ? ['install'] : hasPkg ? ['add'] : []).concat(argv)
 
+    cli.action.start('安装依赖', '正在安装', {stdout: true})
     if (!hasRegistry) {
       command.push(`--registry=${application.registryUrl}`)
+      await lpminit()
     }
 
     this.debug(command.join(' '))
-    cli.action.start('安装依赖', '正在安装', {stdout: true})
 
     try {
       this.debug(globalInstall ? 'npm' : 'yarn', command.join(' '))
@@ -36,6 +39,7 @@ export default class Install extends Command {
         this.debug(line)
       })
       this.debug(code)
+      await loadTaskDict()
       cli.action.stop(code === 0 ? '成功' : '失败')
     } catch (error) {
       cli.action.stop('失败')

@@ -1,7 +1,9 @@
 /* eslint-disable node/no-unsupported-features/node-builtins */
 import {Command, flags} from '@oclif/command'
 import lisa from '@listenai/lisa_core'
+import {loadTaskDict} from '@listenai/lisa_core'
 import * as path from 'path'
+import lpminit from '../util/lpminit'
 
 export default class Create extends Command {
   static description = '创建项目，例`lisa create newProject -t @generator/csk`';
@@ -23,11 +25,12 @@ export default class Create extends Command {
   };
 
   async run() {
+    this.log('启动创建...')
     const DEBUG = process.env.LISA_ENV === 'debug'
 
     const {fs, application, cmd} = lisa
     const {args, flags} = this.parse(Create)
-    const projectName = args.name
+    let projectName = args.name
 
     const generator = flags.template || ''
 
@@ -43,10 +46,13 @@ export default class Create extends Command {
       if (fs.existsSync(fs.project.root)) {
         this.error('该目录下已存在相同名称的文件夹')
       }
+    } else {
+      projectName = path.basename(fs.project.root)
     }
 
     // 当没有generate时,创建空白项目
     fs.mkdirpSync(fs.project.root)
+    process.chdir(fs.project.root)
     fs.project.template_path = path.join(__dirname, '../../public/newProject')
     await fs.project.template('package.json.ejs', 'package.json', {
       projectName: projectName,
@@ -54,13 +60,16 @@ export default class Create extends Command {
     application.gitignore(path.join(fs.project.root, './.gitignore'), ['node_modules'])
 
     try {
-      await cmd('yarn', ['add', `@listenai/lisa_core${DEBUG ? '@beta' : ''}`, `${generator ? DEBUG ? `${generator}@beta` : generator : ''}`, `--registry=${application.registryUrl}`], {
+      await lpminit()
+      this.debug('yarn', ['add', '@listenai/lisa_core', `${generator ? DEBUG ? `${generator}@beta` : generator : ''}`, `--registry=${application.registryUrl}`].join(' '))
+      await cmd('yarn', ['add', '@listenai/lisa_core', `${generator ? DEBUG ? `${generator}@beta` : generator : ''}`, `--registry=${application.registryUrl}`], {
         cwd: fs.project.root,
         shell: true,
         stdio: 'inherit',
       })
     } catch (error) {
-      this.error(error.message)
+      this.log(error.message)
+      this.error('执行命令错误，请重新登录再执行或联系fae进行排查')
     }
 
     if (!generator) {
@@ -77,6 +86,7 @@ export default class Create extends Command {
         shell: true,
         stdio: 'inherit',
       })
+      await loadTaskDict()
       await cmd('lstudio', ['.'], {
         cwd: fs.project.root,
         shell: true,
