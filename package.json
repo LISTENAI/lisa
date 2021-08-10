@@ -1,7 +1,7 @@
 {
   "name": "@listenai/lisa",
   "description": "Lisa 是 Lisa Framework 核心命令行工具，提供模版生成能力以及任务执行命令",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0-beta.2",
   "author": "geekBoom.Zhao <zbzhao@listenai.com>",
   "bin": {
     "lisa": "./bin/run"
@@ -9,7 +9,7 @@
   "bugs": "https://github.com/LISTENAI/lisa/issues",
   "dependencies": {
     "@listenai/cskburn": "^1",
-    "@listenai/lisa_core": "file:../lisa-core",
+    "@listenai/lisa_core": "^2",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
@@ -53,7 +53,8 @@
     ],
     "hooks": {
       "init": [
-        "./lib/hooks/init/load"
+        "./lib/hooks/init/load",
+        "./lib/hooks/init/oauth"
       ]
     },
     "userPlugins": false

@@ -11,7 +11,7 @@ export default class Create extends Command {
   static args = [
     {
       name: 'name',
-      required: true,
+      required: false,
       description: '项目名称',
     },
   ];
@@ -24,15 +24,71 @@ export default class Create extends Command {
     }),
   };
 
-  async run() {
-    this.log('启动创建...')
-    const DEBUG = process.env.LISA_ENV === 'debug'
+  async getProjectName() {
+    const {args} = this.parse(Create)
+    const {cli} = lisa
+    // let projectName = ''
+    // while (!projectName.match(/^[_a-zA-Z0-9-]{1,}$/)) {
+    // if (projectName) {
+    //   this.log('工程名称仅支持英文、数字、下划线、-')
+    // }
+    // eslint-disable-next-line no-await-in-loop
+    const projectName = args.name || await cli.prompt('请输入工程名称', {
+      default: '.',
+    })
+    // }
+    return projectName
+  }
 
-    const {fs, application, cmd} = lisa
-    const {args, flags} = this.parse(Create)
-    let projectName = args.name
-
+  async getGenerator() {
+    const {flags} = this.parse(Create)
     const generator = flags.template || ''
+    return generator
+  }
+
+  async run() {
+    // this.log('启动创建...')
+    const DEBUG = process.env.LISA_ENV === 'debug'
+    const {args, flags} = this.parse(Create)
+    const {fs, application, cmd, job, runner} = lisa
+
+    job('lisa:create', {
+      title: '启动创建...',
+      task: async (ctx, task) => {
+        const projectName = ctx.projectName || await task.prompt({
+          type: 'input',
+          name: 'value',
+          message: '请输入工程名称',
+          initial: '.',
+        })
+        ctx.projectName = projectName
+        const generator = ctx.generator || await (async () => {
+          const command = `search generator --long --json --registry=${application.registryUrl}`
+          const {stdout} = await cmd('npm', command.split(' '))
+          let generators = JSON.parse(stdout)
+          if (!DEBUG) {
+            generators = generators.filter(item => !['@generator/board', '@generator/lpm-pkg'].includes(item.name))
+          }
+          const generator = await task.prompt({
+            type: 'select',
+            name: 'value',
+            message: '请选择工程创建类型',
+            choices: ['init'].concat(generators.map(item => item.name)),
+          })
+          return generator
+        })()
+        ctx.generator = generator === 'init' ? '' : generator
+      },
+    })
+
+    // eslint-disable-next-line prefer-const
+    let {projectName, generator} = (await runner('lisa:create', {
+      projectName: args.name,
+      generator: flags.template,
+    }) as {
+      projectName: string;
+      generator: string;
+    })
 
     this.debug('projectName:', projectName)
     this.debug('generator:', generator)

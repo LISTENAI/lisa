@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-process.env.LISA_ENV = 'debug'
 if (process.argv.indexOf('--debug') >= 0) {
   process.env.DEBUG = '*'
   process.argv = process.argv.filter(item => item !== '--debug')

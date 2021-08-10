@@ -11,30 +11,46 @@ export default class Login extends Command {
 
   static CLIENT_ID = process.env.LISA_CLIENT_ID || '6d7bfd73-98ef-4c31-b39a-7601198e9b9c'
 
-  async clientCredential() {
-    return {
-      token_code: 'b8f744f2-cd14-4d55-a6be-821ab7664ba6',
-      url: 'https://aaaa.ccc',
+  static REQUEST_TIMES = 100
+
+  async clientCredential(): Promise<{ token_code: string; url: string }> {
+    const {got} = lisa
+    try {
+      this.debug(`request->${`${Login.AUTH_RELAY_SERVER}/auth_server/oauth/gen_token_code?client_id=${Login.CLIENT_ID}`}`)
+      const {body} = await got(`${Login.AUTH_RELAY_SERVER}/auth_server/oauth/gen_token_code?client_id=${Login.CLIENT_ID}`, {
+        responseType: 'json',
+      })
+      this.debug(body)
+      return body as { token_code: string; url: string }
+    } catch (error) {
+      this.error(error.message)
     }
   }
 
-  async getAccessToken(token_code: string) {
-    // const {got} = lisa
+  async getAccessToken(token_code: string): Promise<{ access_token: string; refresh_token: string }> {
+    const {got} = lisa
     let count = 1
     return new Promise((resolve, _reject) => {
       const timmer = setInterval(async () => {
         count++
-        if (count >= 5) {
+        if (count >= Login.REQUEST_TIMES) {
           clearInterval(timmer)
-          resolve(false)
+          _reject()
         }
         try {
-          // const res = await got(String(token_code))
-          // res.body
-          clearInterval(timmer)
-          resolve(token_code)
+          const {body}: {body: any}  = await got(`${Login.AUTH_RELAY_SERVER}/auth_server/oauth/token_code/confirm?token_code=${token_code}`, {
+            responseType: 'json',
+          })
+          this.debug(body)
+          if (body.access_token) {
+            clearInterval(timmer)
+            resolve({
+              access_token: body.access_token,
+              refresh_token: body.refresh_token,
+            })
+          }
         } catch (error) {
-
+          this.debug(error.message)
         }
       }, 3000)
     })
@@ -72,36 +88,38 @@ export default class Login extends Command {
 
   async run() {
     const {cli} = lisa
-
     const {token_code, url} = await this.clientCredential()
-
     this.log('请使用手机浏览器扫描以下二维码进行登录')
     const qrcode = require('qrcode-terminal')
     qrcode.generate(url, {small: true}, qr => {
       this.log(qr)
     })
     cli.action.start('等待登录授权...')
-    const accessToken = await this.getAccessToken(token_code)
-
-    if (accessToken === false) {
+    let infoResult = null
+    let accessToken = ''
+    let refreshToken = ''
+    try {
+      const {access_token, refresh_token} = await this.getAccessToken(token_code)
+      accessToken = access_token
+      refreshToken = refresh_token
+      cli.action.start('登录授权成功，正在保存用户信息...')
+      infoResult = await Promise.all([
+        this.getUserInfo(String(accessToken)),
+        this.getLSCloudToken(String(accessToken)),
+      ])
+    } catch (error) {
       this.error('登录超时或失败')
     }
-    cli.action.start('登录授权成功，正在保存用户信息...')
 
-    const result = await Promise.all([
-      this.getUserInfo(String(accessToken)),
-      this.getLSCloudToken(String(accessToken)),
-    ])
-
-    this.debug(result)
+    this.debug(infoResult)
 
     const user: {
       [key: string]: any;
-    } = (result[0] as any).data
+    } = (infoResult[0] as any).data
 
     const lscloudUser: {
       [key: string]: any;
-    } = result[1]
+    } = infoResult[1]
 
     const userInfo = {
       id: user.userId,
@@ -109,6 +127,7 @@ export default class Login extends Command {
       username: user.englishName || '',
       email: user.email || '',
       accessToken: accessToken,
+      refreshToken: refreshToken,
       password: accessToken,
       base64Token: Buffer.from(accessToken).toString('base64'),
       expire: new Date().getTime() + (user.tokenExpiresIn * 1000),
@@ -120,7 +139,7 @@ export default class Login extends Command {
     const config = new Configstore('lisa')
     config.set('userInfo', userInfo)
 
-    await cli.wait(3000)
     cli.action.stop('完成')
+    this.log('登录成功')
   }
 }
