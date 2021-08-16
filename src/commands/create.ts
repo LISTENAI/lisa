@@ -55,6 +55,7 @@ export default class Create extends Command {
     job('lisa:create', {
       title: '启动创建...',
       task: async (ctx, task) => {
+        await lpminit()
         const projectName = ctx.projectName || await task.prompt({
           type: 'input',
           name: 'value',
@@ -116,7 +117,6 @@ export default class Create extends Command {
     application.gitignore(path.join(fs.project.root, './.gitignore'), ['node_modules'])
 
     try {
-      await lpminit()
       this.debug('yarn', ['add', '@listenai/lisa_core', `${generator ? DEBUG ? `${generator}@beta` : generator : ''}`, `--registry=${application.registryUrl}`].join(' '))
       await cmd('yarn', ['add', '@listenai/lisa_core', `${generator ? DEBUG ? `${generator}@beta` : generator : ''}`, `--registry=${application.registryUrl}`], {
         cwd: fs.project.root,
@@ -143,11 +143,29 @@ export default class Create extends Command {
         stdio: 'inherit',
       })
       await loadTaskDict()
-      await cmd('lstudio', ['.'], {
-        cwd: fs.project.root,
-        shell: true,
-        stdio: 'inherit',
-      })
+
+      if (process.env.ListenAiCachePath || (process.env.VSCODE_GIT_ASKPASS_NODE && process.env.VSCODE_GIT_ASKPASS_NODE.indexOf('LStudio.exe') >= 0)) {
+        await cmd('lstudio', ['.'], {
+          cwd: fs.project.root,
+          shell: true,
+          stdio: 'inherit',
+        })
+      } else if ((process.env.VSCODE_GIT_ASKPASS_NODE && process.env.VSCODE_GIT_ASKPASS_NODE.indexOf('Code.exe'))) {
+        await cmd('code', ['.'], {
+          cwd: fs.project.root,
+          shell: true,
+          stdio: 'inherit',
+        })
+      } else {
+        const Path = process.env?.Path || process.env?.PATH || process.env?.path
+        if (Path.indexOf('VS Code') >= 0) {
+          await cmd('code', ['.'], {
+            cwd: fs.project.root,
+            shell: true,
+            stdio: 'inherit',
+          })
+        }
+      }
     } catch (error) {
       this.error(error.message)
     }

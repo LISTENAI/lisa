@@ -201,6 +201,18 @@ export default class Commands extends Command {
           }
           break
 
+        case 'login':
+          newCommand = {
+            id: command.id,
+            name: command.id,
+            description: command.description,
+            action: {
+              type: 'run_cmd',
+              cmd: 'lisa login',
+            },
+          }
+          break
+
         default:
           newCommand = {
             id: command.id,
