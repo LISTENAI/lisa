@@ -1,0 +1,26 @@
+name: prereleased
+
+on:
+  release:
+    types: [prereleased]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - run: |
+          echo -e "//registry-lpm.listenai.com/:_password=${{ secrets.LPM_ZHUOBIN_TOKEN }}" > .npmrc
+          echo -e "//registry-lpm.listenai.com/:username=zbzhao" >> .npmrc
+          echo -e "//registry-lpm.listenai.com/:email=zbzhao@listenai.com" >> .npmrc
+          echo -e "//registry-lpm.listenai.com/:always-auth=true" >> .npmrc
+      - run: npm install
+      - run: npm run prepack
+      - run: npm publish --tag=beta --registry=https://registry-lpm.listenai.com
+      - uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          tag: 'beta'
