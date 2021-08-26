@@ -102,6 +102,7 @@ export default class Commands extends Command {
                 return {
                   id: `${command.id}-${task.id}`,
                   name: task.id,
+                  description: task.title || '',
                   action: {
                     type: 'run_cmd',
                     cmd: `lisa task ${task.id}`,
@@ -189,30 +190,6 @@ export default class Commands extends Command {
           }
           break
 
-        case 'create':
-          newCommand = {
-            id: command.id,
-            name: command.id,
-            description: command.description,
-            action: {
-              type: 'run_cmd',
-              cmd: 'lisa create',
-            },
-          }
-          break
-
-        case 'login':
-          newCommand = {
-            id: command.id,
-            name: command.id,
-            description: command.description,
-            action: {
-              type: 'run_cmd',
-              cmd: 'lisa login',
-            },
-          }
-          break
-
         default:
           newCommand = {
             id: command.id,
@@ -220,7 +197,7 @@ export default class Commands extends Command {
             description: command.description,
             action: {
               type: 'run_cmd',
-              cmd: ['update'].includes(command.id) ? `lisa ${command.id}` : `lisa ${command.id} --help`,
+              cmd: ['login', 'create', 'update', 'upgrade'].includes(command.id) ? `lisa ${command.id}` : `lisa ${command.id} --help`,
             },
           }
           break

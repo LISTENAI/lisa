@@ -34,8 +34,14 @@ export default class Task extends Command {
   async run() {
     const {cli} = lisa
     const {argv, flags} = this.parse(Task)
-
-    const taskDict = getTaskDict()
+    let taskDict: {
+      [key: string]: any;
+    } = {}
+    try {
+      taskDict = getTaskDict()
+    } catch (error) {
+      taskDict = {}
+    }
 
     if (flags.table) {
       const tasks = Object.keys(taskDict).map((taskId: string) => {
