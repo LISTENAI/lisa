@@ -31,15 +31,15 @@ export default class Install extends Command {
       await lpminit()
     }
 
-    this.debug(command.join(' '))
-
     try {
       this.debug(globalInstall ? 'npm' : 'yarn', command.join(' '))
       const code = await exec(globalInstall ? 'npm' : 'yarn', command, undefined, line => {
         this.debug(line)
       })
       this.debug(code)
-      await loadTaskDict()
+      if (code === 0) {
+        await loadTaskDict()
+      }
       cli.action.stop(code === 0 ? '成功' : '失败')
     } catch (error) {
       cli.action.stop('失败')

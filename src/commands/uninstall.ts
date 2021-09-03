@@ -1,5 +1,6 @@
 import {Command} from '@oclif/command'
 import lisa from '@listenai/lisa_core'
+import {loadTaskDict} from '@listenai/lisa_core'
 
 export default class Uninstall extends Command {
   static description = '移除依赖'
@@ -34,6 +35,9 @@ export default class Uninstall extends Command {
         this.debug(line)
       })
       this.debug(code)
+      if (code === 0) {
+        await loadTaskDict()
+      }
       cli.action.stop(code === 0 ? '成功' : '失败')
     } catch (error) {
       cli.action.stop('失败')

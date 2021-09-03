@@ -94,6 +94,7 @@ export default class Login extends Command {
     qrcode.generate(url, {small: true}, qr => {
       this.log(qr)
     })
+    this.log(`或直接访问url进行登录：${url}`)
     cli.action.start('等待登录授权...')
     let infoResult = null
     let accessToken = ''
