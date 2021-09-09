@@ -31,7 +31,7 @@ const event: Hook<'init'> = async function (options) {
           responseType: 'json',
         })
 
-        this.debug(`>>> 响应 : ${JSON.stringify(response.body)}`)
+        this.debug(`>>> 响应: ${JSON.stringify(response.body)}`)
       } catch (error) {
         this.error(`错误:${error}`)
       }
