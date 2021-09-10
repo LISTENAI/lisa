@@ -18,7 +18,7 @@ $ npm install -g @listenai/lisa
 $ lisa COMMAND
 running command...
 $ lisa (-v|--version|version)
-@listenai/lisa/2.0.1 win32-x64 node-v12.22.0
+@listenai/lisa/2.0.2 win32-x64 node-v12.22.0
 $ lisa --help [COMMAND]
 USAGE
   $ lisa COMMAND
@@ -56,7 +56,7 @@ OPTIONS
   --factory      打包factory包
 ```
 
-_See code: [src/commands/build.ts](https://github.com/LISTENAI/lisa/blob/v2.0.1/src/commands/build.ts)_
+_See code: [src/commands/build.ts](https://github.com/LISTENAI/lisa/blob/v2.0.2/src/commands/build.ts)_
 
 ## `lisa create [NAME]`
 
@@ -73,7 +73,7 @@ OPTIONS
   -t, --template=template  生成器模板
 ```
 
-_See code: [src/commands/create.ts](https://github.com/LISTENAI/lisa/blob/v2.0.1/src/commands/create.ts)_
+_See code: [src/commands/create.ts](https://github.com/LISTENAI/lisa/blob/v2.0.2/src/commands/create.ts)_
 
 ## `lisa flash [FILEPATH]`
 
@@ -90,7 +90,7 @@ OPTIONS
   -p, --part=part  选择烧录part文件，例：'-p master -p script'，默认全部烧录
 ```
 
-_See code: [src/commands/flash.ts](https://github.com/LISTENAI/lisa/blob/v2.0.1/src/commands/flash.ts)_
+_See code: [src/commands/flash.ts](https://github.com/LISTENAI/lisa/blob/v2.0.2/src/commands/flash.ts)_
 
 ## `lisa install [PKG]`
 
@@ -104,7 +104,7 @@ ARGUMENTS
   PKG  资源包名，例：'@source/csk4002'，不填时默认安装lisa项目中的依赖
 ```
 
-_See code: [src/commands/install.ts](https://github.com/LISTENAI/lisa/blob/v2.0.1/src/commands/install.ts)_
+_See code: [src/commands/install.ts](https://github.com/LISTENAI/lisa/blob/v2.0.2/src/commands/install.ts)_
 
 ## `lisa login`
 
@@ -115,7 +115,7 @@ USAGE
   $ lisa login
 ```
 
-_See code: [src/commands/login.ts](https://github.com/LISTENAI/lisa/blob/v2.0.1/src/commands/login.ts)_
+_See code: [src/commands/login.ts](https://github.com/LISTENAI/lisa/blob/v2.0.2/src/commands/login.ts)_
 
 ## `lisa plugins`
 
@@ -272,7 +272,7 @@ OPTIONS
   --verbose    日志全量输出
 ```
 
-_See code: [src/commands/task.ts](https://github.com/LISTENAI/lisa/blob/v2.0.1/src/commands/task.ts)_
+_See code: [src/commands/task.ts](https://github.com/LISTENAI/lisa/blob/v2.0.2/src/commands/task.ts)_
 
 ## `lisa uninstall [PKG]`
 
@@ -286,7 +286,7 @@ ARGUMENTS
   PKG  资源包名，例：'@alge/general'
 ```
 
-_See code: [src/commands/uninstall.ts](https://github.com/LISTENAI/lisa/blob/v2.0.1/src/commands/uninstall.ts)_
+_See code: [src/commands/uninstall.ts](https://github.com/LISTENAI/lisa/blob/v2.0.2/src/commands/uninstall.ts)_
 
 ## `lisa update`
 
@@ -297,7 +297,7 @@ USAGE
   $ lisa update
 ```
 
-_See code: [src/commands/update.ts](https://github.com/LISTENAI/lisa/blob/v2.0.1/src/commands/update.ts)_
+_See code: [src/commands/update.ts](https://github.com/LISTENAI/lisa/blob/v2.0.2/src/commands/update.ts)_
 
 ## `lisa upgrade`
 
@@ -308,5 +308,5 @@ USAGE
   $ lisa upgrade
 ```
 
-_See code: [src/commands/upgrade.ts](https://github.com/LISTENAI/lisa/blob/v2.0.1/src/commands/upgrade.ts)_
+_See code: [src/commands/upgrade.ts](https://github.com/LISTENAI/lisa/blob/v2.0.2/src/commands/upgrade.ts)_
 <!-- commandsstop -->
