@@ -1,27 +1,24 @@
 import {Command, flags} from '@oclif/command'
-import {ux} from 'cli-ux'
 import * as _ from 'lodash'
 import {EOL} from 'os'
-import {cmd} from '@listenai/lisa_core'
+import lisa from '@listenai/lisa_core'
 
-type Dictionary = {[index: string]: object}
 export default class Commands extends Command {
   static description = '展示所有的命令'
 
   static hidden = true
 
   static flags: flags.Input<any> = {
-    help: flags.help({char: 'h'}),
     json: flags.boolean({char: 'j', description: 'display unfiltered api data in json format'}),
-    hidden: flags.boolean({description: 'show hidden commands'}),
-    ...ux.table.flags(),
   }
 
   async run() {
+    const {cmd} = lisa
     const {flags} = this.parse(Commands)
     let commands = this.getCommands()
     if (!flags.hidden) {
       commands = commands.filter(c => !c.hidden)
+      commands = commands.filter(c => !c.id.startsWith('plugins'))
     }
 
     const config = this.config
@@ -34,12 +31,13 @@ export default class Commands extends Command {
 
     const taskRes = await cmd('lisa', ['task', '--json'])
     const taskList = JSON.parse(taskRes.stdout)
-    const pipelineRes = await cmd('lisa', ['pipeline', '--json'])
-    const pipeList = JSON.parse(pipelineRes.stdout)
+    // const pipelineRes = await cmd('lisa', ['pipeline', '--json'])
+    // const pipeList = JSON.parse(pipelineRes.stdout)
+    const pipeList = []
 
     if (flags.json) {
       let outputCmds = new Array(7)
-      const sorts = ['help', 'create', 'build', 'flash', 'task', 'pipeline', 'install']
+      const sorts = ['help', 'create', 'build', 'flash', 'task', 'install']
       commands.forEach((command: any) => {
         // Massage some fields so it looks good in the table
         command.description = (command.description || '').split(EOL)[0]
@@ -104,6 +102,7 @@ export default class Commands extends Command {
                 return {
                   id: `${command.id}-${task.id}`,
                   name: task.id,
+                  description: task.title || '',
                   action: {
                     type: 'run_cmd',
                     cmd: `lisa task ${task.id}`,
@@ -198,7 +197,7 @@ export default class Commands extends Command {
             description: command.description,
             action: {
               type: 'run_cmd',
-              cmd: ['update'].includes(command.id) ? `lisa ${command.id}` : `lisa ${command.id} --help`,
+              cmd: ['login', 'create', 'update', 'upgrade'].includes(command.id) ? `lisa ${command.id}` : `lisa ${command.id} --help`,
             },
           }
           break
@@ -223,80 +222,12 @@ export default class Commands extends Command {
           cmd: 'lisa --help',
         },
       })
-
+      this.debug(outputCmds)
       this.log(JSON.stringify(outputCmds))
-    } else {
-      ux.table(commands.map((command: any) => {
-        // Massage some fields so it looks good in the table
-        command.description = (command.description || '').split(EOL)[0]
-        command.hidden = Boolean(command.hidden)
-        command.usage = (command.usage || '')
-        return command
-      }), {
-        id: {
-          header: 'Command',
-        },
-        description: {},
-        usage: {
-          extended: true,
-        },
-        pluginName: {
-          extended: true,
-          header: 'Plugin',
-        },
-        pluginType: {
-          extended: true,
-          header: 'Type',
-        },
-        hidden: {
-          extended: true,
-        },
-      }, {
-        printLine: this.log,
-        ...flags, // parsed flags
-      })
     }
   }
 
   private getCommands() {
     return this.config.commands
-  }
-
-  private removeCycles(object: unknown) {
-    // Keep track of seen objects.
-    const seenObjects = new WeakMap<Dictionary, undefined>()
-
-    const _removeCycles = (obj: unknown) => {
-      // Use object prototype to get around type and null checks
-      if (Object.prototype.toString.call(obj) === '[object Object]') {
-        // We know it is a "Dictionary" because of the conditional
-        const dictionary = obj as Dictionary
-
-        if (seenObjects.has(dictionary)) {
-          // Seen, return undefined to remove.
-          return undefined
-        }
-
-        seenObjects.set(dictionary, undefined)
-
-        for (const key in dictionary) {
-          // Delete the duplicate object if cycle found.
-          if (_removeCycles(dictionary[key]) === undefined) {
-            delete dictionary[key]
-          }
-        }
-      } else if (Array.isArray(obj)) {
-        for (const i in obj) {
-          if (_removeCycles(obj[i]) === undefined) {
-            // We don't want to delete the array, but we can replace the element with null.
-            obj[i] = null
-          }
-        }
-      }
-
-      return obj
-    }
-
-    return _removeCycles(object)
   }
 }

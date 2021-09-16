@@ -1,7 +1,6 @@
-import {Command, flags} from '@oclif/command'
-import Utils from '../lib/utils'
-import lmp from '../util/lmp'
-import cli from 'cli-ux'
+import {Command} from '@oclif/command'
+import lisa from '@listenai/lisa_core'
+import {loadTaskDict} from '@listenai/lisa_core'
 
 export default class Uninstall extends Command {
   static description = '移除依赖'
@@ -10,42 +9,39 @@ export default class Uninstall extends Command {
     {
       name: 'pkg',
       required: false,
-      description: "资源包名，例：'@tool/nds-toolchain @tool/cskburn'",
+      description: "资源包名，例：'@alge/general'",
     },
   ]
-
-  static flags = {
-    global: flags.boolean({
-      char: 'g',
-      description: '全局移除依赖',
-    }),
-  }
 
   static strict = false
 
   async run() {
-    const {argv, flags} = this.parse(Uninstall)
-    if (argv.length <= 0) {
-      this.error("缺少pkg参数，执行 'lisa uninstall --help' 查看帮助")
+    const {cli, exec} = lisa
+    const {argv} = this.parse(Uninstall)
+    const globalInstall = argv.some(item => item === '-g' || item === '--global')
+    const hasPkg = argv.some(item => !item.startsWith('-'))
+
+    if (!hasPkg) {
+      this.error('请确保移除至少一个包')
     }
-    // this.log('start 移除依赖')
-    const pkgName = argv.map(pkg => {
-      // if (pkg.split('@')[2]) {
-      //   pkg = `@${pkg.split('@')[1]}@'${pkg.split('@')[2]}'`
-      // }
-      return pkg
-    })
+
+    const command = (globalInstall ? ['uninstall'] : ['remove']).concat(argv)
+
     cli.action.start('移除依赖')
+
     try {
-      const uninstallRes = await lmp.uninstall(pkgName, flags.global)
-      if (uninstallRes) {
-        cli.action.stop('完成')
-      } else {
-        cli.action.stop('失败')
-        this.log(`error-log存放在：${Utils.getGlobal('application').logPath}/exec-error.log`)
+      this.debug(globalInstall ? 'npm' : 'yarn', command.join(' '))
+      const code = await exec(globalInstall ? 'npm' : 'yarn', command, undefined, line => {
+        this.debug(line)
+      })
+      this.debug(code)
+      if (code === 0) {
+        await loadTaskDict()
       }
+      cli.action.stop(code === 0 ? '成功' : '失败')
     } catch (error) {
-      this.error(error)
+      cli.action.stop('失败')
+      this.error(error.message)
     }
   }
 }

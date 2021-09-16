@@ -1,28 +1,22 @@
 import {Hook} from '@oclif/config'
-import {load, Application, argv} from '@listenai/lisa_core'
-import * as path from 'path'
-const debug = require('debug')('update-check')
+import lisa from '@listenai/lisa_core'
+import {argv, loadPreRunTask, load} from '@listenai/lisa_core'
 
 const initLoad: Hook<'init'> = async function (options) {
+  lisa.application.cacheDir = options.config.cacheDir
+  lisa.application.argv = argv(options.argv)
+  this.debug('参数: %s', JSON.stringify(lisa.application.argv))
 
-  if (!['-v', '--version', '-h', '--help', 'install', 'search', 'view'].includes(options.id)) {
-    import(path.join(__dirname, '../../tasks'))
-      .then(() => debug("imported tasks done"))
-      .catch(err => debug(err))
+  lisa.application.debug = `lisa:${options.id}`
 
-    try {
-      //TODO: 后续把lisa core中的load改造成异步模式
-      const application: any = load().application
-      application.cacheDir = options.config.cacheDir
-      application.argv = argv()
-      const fs: any = load().fs;
-      ((global as any).application as Application) =  application;
-      ((global as any).fs) =  fs
-    } catch (error) {
-      if (!(options.id === 'task' && options.argv.some(item => item === 'install:lisa_core'))) {
-        this.error('当前目录是lisa项目，请先执行 `lisa task install:lisa_core` 安装核心库')
-      }
-    }
+  if (options.id === 'task' && lisa.application.argv._.length > 0) {
+    loadPreRunTask()
+    this.debug('loadPreRunTask end')
+  }
+
+  if (['build', 'flash'].includes(options.id)) {
+    load()
+    this.debug('load end')
   }
 }
 

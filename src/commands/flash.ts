@@ -1,10 +1,8 @@
 import {Command, flags} from '@oclif/command'
-import * as fs from 'fs-extra'
 import * as path from 'path'
-import {runner} from '@listenai/lisa_core'
-import Utils from '../lib/utils'
+import lisa from '@listenai/lisa_core'
 import FlashCommand from '../lib/flash-command'
-import AdmZip = require('adm-zip')
+import * as AdmZip from 'adm-zip'
 export default class Flash extends Command {
   static description = '烧录程序'
 
@@ -25,11 +23,12 @@ export default class Flash extends Command {
 
   async run() {
     const {args} = this.parse(Flash)
+    const {application, fs} = lisa
     let fp = ''
     if (args.filePath) {
       fp = `${args.filePath}`
     }
-    const lpkPath = Utils.getGlobal('application').context.cskBuild?.debugLpkPath || ''
+    const lpkPath = application.context.cskBuild?.debugLpkPath || ''
     if (!fp) {
       const defaultLpkFile = path.join(lpkPath, 'burner.lpk')
       if (!fs.existsSync(defaultLpkFile)) {
@@ -45,7 +44,7 @@ export default class Flash extends Command {
     // 获取LPK根目录路径
     const lkpDirPath = parsed.dir
 
-    Utils.getGlobal('application').addContext('cskburn', {
+    application.addContext('cskburn', {
       fp: fp,
       lkpDirPath: lkpDirPath,
       parts: parts,
@@ -66,21 +65,137 @@ export default class Flash extends Command {
         return this.log(`压缩包中缺少 [${allBin.join(',')}] 文件`)
       }
 
-      runner(['flash:compress', 'flash:parse_zip'].join(',')).then((ctx: any) => {
-        const {cskburn} = ctx.application.context
-        const flashCommand: FlashCommand = new FlashCommand()
-        flashCommand.excuteCommand(cskburn.lkpDirPath, ctx.params, ctx.binList)
-      }).catch((error: any) => {
-        this.error(error)
-      })
+      await this.unzip(fp)
+      const {params, binList} = await this.parseZip(lkpDirPath)
+      await this.startFlash(params, binList)
     } else {
-      runner(['flash:compress', 'flash:parse_json'].join(',')).then((ctx: any) => {
-        const {cskburn} = ctx.application.context
-        const flashCommand: FlashCommand = new FlashCommand()
-        flashCommand.excuteCommand(cskburn.lkpDirPath, ctx.params, ctx.binList)
-      }).catch((error: any) => {
-        this.error(error)
-      })
+      await this.unzip(fp)
+      const {params, binList} = await this.parseJson(lkpDirPath, parts)
+      await this.startFlash(params, binList)
     }
+  }
+
+  async unzip(fp) {
+    const {fs} = lisa
+    await fs.project.unzip(fp, path.dirname(fp))
+  }
+
+  async parseZip(dir) {
+    const {fs} = lisa
+    // 判断固件是否存在
+    const imgExist = fs.existsSync(path.join(dir, 'burner.img'))
+    this.debug(`固件地址：${path.join(dir, 'burner.img')}`)
+    if (imgExist) {
+      const flashbootExist = fs.existsSync(path.join(dir, 'flashboot.bin'))
+      const masterExist = fs.existsSync(path.join(dir, 'master.bin'))
+      const scriptExist = fs.existsSync(path.join(dir, 'script.bin'))
+      const respeakExist = fs.existsSync(path.join(dir, 'respak.bin'))
+
+      const params: Array<string> = []
+      // bin描述信息
+      const binList: Array<string> = []
+
+      if (flashbootExist) {
+        const addr = '0'
+        const filePath: string = path.join(dir, 'flashboot.bin')
+        params.push(addr)
+        params.push(filePath)
+        binList.push(`flashboot(${addr})`)
+      }
+
+      if (masterExist) {
+        const addr = '0x10000'
+        const filePath: string = path.join(dir, 'master.bin')
+        params.push(addr)
+        params.push(filePath)
+        binList.push(`manifest(${addr})`)
+      }
+
+      if (scriptExist) {
+        const addr = '0xf0000'
+        const filePath: string = path.join(dir, 'script.bin')
+        params.push(addr)
+        params.push(filePath)
+        binList.push(`script(${addr})`)
+      }
+
+      if (respeakExist) {
+        const addr = '0x100000'
+        const filePath: string = path.join(dir, 'respak.bin')
+        params.push(addr)
+        params.push(filePath)
+        binList.push(`respak(${addr})`)
+      }
+
+      this.debug(params)
+      return {
+        params,
+        binList,
+      }
+    }
+    throw new Error('读取manifest.json文件失败')
+  }
+
+  async parseJson(dir, parts) {
+    const {fs} = lisa
+    // 判断固件是否存在
+    const jsonPath: string = path.join(dir, 'manifest.json')
+    const manifestExist = fs.existsSync(jsonPath)
+    if (manifestExist) {
+      const params: Array<string> = []
+      // bin描述信息
+      const binList: Array<string> = []
+      const jsonData = fs.readFileSync(jsonPath, 'utf-8')
+      const json = JSON.parse(jsonData)
+      // let burner: string = json.burner
+      // burner = path.join(dir, burner)
+      const images = json.images
+      // params.push('-w')
+      // params.push(burner)
+      const partList = parts.split(' ', 4)
+      // eslint-disable-next-line guard-for-in
+      if (partList.length === 0 || parts === 'undefined' || parts === '') {
+        // eslint-disable-next-line guard-for-in
+        for (const key in images) {
+          const value = images[key]
+          const addr = value.addr
+          const file: string = value.file
+          const filePath: string = file.replace('.', dir)
+          // eslint-disable-next-line no-console
+          params.push(addr)
+          params.push(filePath)
+
+          binList.push(`${key}(${addr})`)
+        }
+      } else {
+        // eslint-disable-next-line guard-for-in
+        for (const key in images) {
+          const value = images[key]
+          const addr = value.addr
+          const file: string = value.file
+          const filePath: string = file.replace('.', dir)
+          for (const p in partList) {
+            // eslint-disable-next-line max-depth
+            if (partList[p] === key) {
+              // eslint-disable-next-line no-console
+              params.push(addr)
+              params.push(filePath)
+
+              binList.push(`${key}(${addr})`)
+            }
+          }
+        }
+      }
+      return {
+        params,
+        binList,
+      }
+    }
+    throw new Error('读取manifest.json文件失败')
+  }
+
+  async startFlash(params, binList) {
+    const flashCommand: FlashCommand = new FlashCommand()
+    flashCommand.excuteCommand(params, binList)
   }
 }

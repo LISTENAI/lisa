@@ -1,10 +1,7 @@
-/* eslint-disable node/no-unsupported-features/node-builtins */
 import {Command, flags} from '@oclif/command'
+import lisa from '@listenai/lisa_core'
 
-import {runner, cmd} from '@listenai/lisa_core'
-import Utils from '../lib/utils'
-
-export default class New extends Command {
+export default class Build extends Command {
   static description = '固件开发项目编译打包';
 
   static flags = {
@@ -21,12 +18,12 @@ export default class New extends Command {
 
   async run() {
     const self = this
-    const {flags} = this.parse(New)
+    const {runner, application} = lisa
+
+    const {flags} = this.parse(Build)
     const {release, factory} = flags
 
-    // const {runner, cmd} = await import('@listenai/lisa_core')
-
-    return runner(Utils.getPipelineTask('build')).then(async () => {
+    return runner(application.pipeline.build.tasks.join(',')).then(async () => {
       if (release) {
         await runner('build:release')
       }

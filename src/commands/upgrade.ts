@@ -1,25 +1,39 @@
-import {Command, flags} from '@oclif/command'
-import lmp from '../util/lmp'
-import cli from 'cli-ux'
+import {Command} from '@oclif/command'
+import lisa from '@listenai/lisa_core'
+import lpminit from '../util/lpminit'
+import {loadTaskDict} from '@listenai/lisa_core'
 
 export default class Upgrade extends Command {
   static description = '更新当前项目依赖'
 
   static strict = false
 
-  static flags = {
-    latest: flags.boolean({
-      description: '依赖更新到最新版本',
-    }),
-  }
-
   async run() {
-    const {flags} = this.parse(Upgrade)
-    cli.action.start('更新当前项目依赖', '正在更新', {stdout: true})
+    const {application, cli, exec} = lisa
+    const {argv} = this.parse(Upgrade)
+    const hasRegistry = argv.some(item => item.startsWith('--registry='))
 
-    const installRes = await lmp.upgrade(flags.latest)
-    if (installRes) {
-      cli.action.stop('成功')
+    const command = ['upgrade'].concat(argv)
+    cli.action.start('更新当前项目依赖', '正在更新', {stdout: true})
+    if (!hasRegistry) {
+      command.push(`--registry=${application.registryUrl}`)
+      await lpminit()
+    }
+
+    this.debug(command.join(' '))
+    try {
+      this.debug('yarn', command.join(' '))
+      const code = await exec('yarn', command, undefined, line => {
+        this.debug(line)
+      })
+      this.debug(code)
+      if (code === 0) {
+        await loadTaskDict()
+      }
+      cli.action.stop(code === 0 ? '成功' : '失败')
+    } catch (error) {
+      cli.action.stop('失败')
+      this.error(error.message)
     }
   }
 }

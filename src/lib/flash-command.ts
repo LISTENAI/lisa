@@ -1,35 +1,28 @@
-import {cmd, application} from '@listenai/lisa_core'
+import lisa from '@listenai/lisa_core'
 const {CSKBURN} = require('@listenai/cskburn')
-import cli from 'cli-ux'
 import * as iconv from 'iconv-lite'
-import Utils from '../lib/utils'
 export default class FlashCommand {
-  excuteCommand(dir: string, params: Array<string>, binList: Array<string>) {
+  excuteCommand(params: Array<string>, binList: Array<string>) {
+    const {cmd, application, cli} = lisa
     // eslint-disable-next-line no-console
     console.log(`bin list > ${binList}`)
     // eslint-disable-next-line no-console
     console.log('[-]等待设备进入烧录模式...')
-    // let excuteResolve: any = null
-    // const excutePromise = new Promise((resolve, _reject) => {
-    //   excuteResolve = resolve
-    // })
     const sleep = 100
-    // eslint-disable-next-line no-console
-    application.log(`>>> ${CSKBURN} ${params.join(' ')}`)
+    application.debug(`${CSKBURN} ${params.join(' ')}`)
     const cskburnExcute = cmd(CSKBURN, params)
 
     let partNum = 1
     let customBar = null
     // eslint-disable-next-line complexity
     cskburnExcute.stdout.on('data', async data => {
-      await Utils.sleep(sleep)
+      await cli.wait(sleep)
       let logMsg = ''
       if (process.platform === 'win32') {
         logMsg = iconv.decode(data, 'gbk')
       } else {
         logMsg = data.toString()
       }
-      // console.log(logMsg)
       // eslint-disable-next-line no-empty
       if (logMsg.indexOf('KB') !== -1 && logMsg.indexOf('正在烧录分区') === -1) {
         const valueMsg = logMsg.match(/\d+(\.\d+)?/g)[0]

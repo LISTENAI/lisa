@@ -1,6 +1,6 @@
 import {Command, flags} from '@oclif/command'
-import {runner, application} from '@listenai/lisa_core'
-import {cli} from 'cli-ux'
+import lisa from '@listenai/lisa_core'
+import {getTaskDict} from '@listenai/lisa_core'
 
 export default class Task extends Command {
   static strict = false
@@ -32,12 +32,20 @@ export default class Task extends Command {
   };
 
   async run() {
+    const {cli} = lisa
     const {argv, flags} = this.parse(Task)
-    // application.argv = options.argv
-    // console.log(this.parse(Task))
+    let taskDict: {
+      [key: string]: any;
+    } = {}
+    try {
+      taskDict = getTaskDict()
+    } catch (error) {
+      taskDict = {}
+    }
+
     if (flags.table) {
-      const tasks = Object.keys(application.tasks).map((taskId: string) => {
-        return Object.assign(application.tasks[taskId], {id: taskId})
+      const tasks = Object.keys(taskDict).map((taskId: string) => {
+        return Object.assign(taskDict[taskId], {id: taskId})
       })
       cli.table(tasks, {
         id: {
@@ -52,12 +60,12 @@ export default class Task extends Command {
         ...flags, // parsed flags
       })
     } else if (flags.json) {
-      const tasks = Object.keys(application.tasks).map((taskId: string) => {
-        return Object.assign(application.tasks[taskId], {id: taskId})
+      const tasks = Object.keys(taskDict).map((taskId: string) => {
+        return Object.assign(taskDict[taskId], {id: taskId})
       })
       this.log(JSON.stringify(tasks))
     } else if (argv.length > 0) {
-      runner(argv.join(','), {}, flags.verbose || false)
+      lisa.runner(argv.join(','), {}, flags.verbose || process.env.LISA_TASK_VERBOSE === 'true' || false)
     } else {
       this.error('请输入至少一个可执行的task')
     }

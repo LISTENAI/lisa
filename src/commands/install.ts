@@ -1,11 +1,7 @@
-import {Command, flags} from '@oclif/command'
-// import defaultPath from '../util/default-path'
-// import tomlHandler from '../util/toml-handler'
-import lmp from '../util/lmp'
-// import * as fs from 'fs'
-// import * as logSymbols from 'log-symbols'
-import Utils from '../lib/utils'
-import cli from 'cli-ux'
+import {Command} from '@oclif/command'
+import lisa from '@listenai/lisa_core'
+import {loadTaskDict} from '@listenai/lisa_core'
+import lpminit from '../util/lpminit'
 
 export default class Install extends Command {
   static description = '安装依赖'
@@ -18,44 +14,36 @@ export default class Install extends Command {
     },
   ]
 
-  static flags = {
-    global: flags.boolean({
-      char: 'g',
-      description: '全局安装依赖',
-    }),
-  }
-
   static strict = false
 
   async run() {
-    const {flags, argv} = this.parse(Install)
+    const {application, cli, exec} = lisa
+    const {argv} = this.parse(Install)
+    const hasRegistry = argv.some(item => item.startsWith('--registry='))
+    const globalInstall = argv.some(item => item === '-g' || item === '--global')
+    const hasPkg = argv.some(item => !item.startsWith('-'))
+
+    const command = (globalInstall ? ['install'] : hasPkg ? ['add'] : []).concat(argv)
 
     cli.action.start('安装依赖', '正在安装', {stdout: true})
-
-    if (argv.length > 0) {
-      const pkgName = argv.map(pkg => {
-        // if (pkg.split('@')[2]) {
-        //   pkg = `@${pkg.split('@')[1]}@'${pkg.split('@')[2]}'`
-        // }
-        return pkg
-      })
-      const installRes = await lmp.install(pkgName, flags.global)
-      if (installRes) {
-        cli.action.stop('成功')
-      } else {
-        cli.action.stop('失败')
-        this.log(`error-log存放在：${Utils.getGlobal('application').logPath}/exec-error.log`)
-      }
+    if (!hasRegistry) {
+      command.push(`--registry=${application.registryUrl}`)
+      await lpminit()
     }
 
-    if (argv.length <= 0) {
-      const installRes = await lmp.install([], flags.global)
-      if (installRes) {
-        cli.action.stop('成功')
-      } else {
-        cli.action.stop('失败')
-        this.log(`error-log存放在：${Utils.getGlobal('application').logPath}/exec-error.log`)
+    try {
+      this.debug(globalInstall ? 'npm' : 'yarn', command.join(' '))
+      const code = await exec(globalInstall ? 'npm' : 'yarn', command, undefined, line => {
+        this.debug(line)
+      })
+      this.debug(code)
+      if (code === 0) {
+        await loadTaskDict()
       }
+      cli.action.stop(code === 0 ? '成功' : '失败')
+    } catch (error) {
+      cli.action.stop('失败')
+      this.error(error.message)
     }
   }
 }
