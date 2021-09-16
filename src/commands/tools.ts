@@ -143,10 +143,10 @@ export default class Tools extends Command {
 
       // 6、发布
       this.debug(`npm ${['publish', `--registry=${application.registryUrl}`].join(' ')}`)
-      // await cmd('npm', ['publish', `--registry=${application.registryUrl}`], {
-      //   cwd: fs.project.root,
-      //   stdio: 'inherit',
-      // })
+      await cmd('npm', ['publish', `--registry=${application.registryUrl}`], {
+        cwd: fs.project.root,
+        stdio: 'inherit',
+      })
       return
     }
     // npm list -g --json --depth 0
