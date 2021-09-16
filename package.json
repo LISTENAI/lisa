@@ -57,7 +57,8 @@
       "init": [
         "./lib/hooks/init/load",
         "./lib/hooks/init/oauth",
-        "./lib/hooks/init/event"
+        "./lib/hooks/init/event",
+        "./lib/hooks/init/check-update"
       ]
     },
     "userPlugins": false
