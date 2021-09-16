@@ -9,9 +9,17 @@ export default class Update extends Command {
   async run() {
     const {cli, cmd} = lisa
     cli.action.start('正在更新到最新版本...')
+    const DEBUG = process.env.LISA_ENV === 'debug'
     const nowVersion = this.config.version
     this.debug('当前版本 %s', nowVersion)
     await lpminit()
+
+    if (DEBUG) {
+      this.log('当前环境为 beta，将安装更新beta版本')
+      await cmd('npm', ['install', '@listenai/lisa@beta', '-g'])
+      return
+    }
+
     const res = await cmd('npm', ['view', '@listenai/lisa', 'dist-tags'])
 
     try {

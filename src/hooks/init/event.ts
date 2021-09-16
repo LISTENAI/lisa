@@ -2,7 +2,6 @@ import {Hook} from '@oclif/config'
 import {argv} from '@listenai/lisa_core'
 import got from 'got/dist/source'
 import * as Configstore from 'configstore'
-import lisa from '@listenai/lisa_core'
 const config = new Configstore('lisa')
 
 const event: Hook<'init'> = async function (options) {
@@ -33,7 +32,7 @@ const event: Hook<'init'> = async function (options) {
 
         this.debug(`>>> 响应: ${JSON.stringify(response.body)}`)
       } catch (error) {
-        this.error(`错误:${error}`)
+        this.debug(`错误:${error}`)
       }
     }
   }

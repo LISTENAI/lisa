@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+
+const {spawn} = require('child_process')
+const path = require('path')
+const fs = require('fs-extra')
+const {platform} = process
+const argv = require('minimist')(process.argv.slice(2))
+
+const suffix = (platform === 'win32') ? '.exe' : ''
+const binary = path.resolve(path.join(__dirname, `../lib/<%= cliName %>-${platform}${suffix}`))
+
+if (argv.version || argv.v) {
+  console.log(fs.readJsonSync(path.join(__dirname, '../package.json')).version)
+  return
+}
+
+if (argv.update) {
+  spawn('npm', ['install', fs.readJsonSync(path.join(__dirname, '../package.json')).name, '-g', '--registry=https://registry-lpm.listenai.com'], {
+    stdio: ['inherit', 'pipe', 'inherit'],
+  })
+  return
+}
+
+spawn(binary, process.argv.slice(2), {
+  stdio: 'inherit',
+})
