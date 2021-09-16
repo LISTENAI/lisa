@@ -154,7 +154,7 @@ export default class Tools extends Command {
       this.debug(`npm ${['list', '-g', '--json', '--depth', '0'].join(' ')}`)
       const res = await cmd('npm', ['list', '-g', '--json', '--depth', '0'])
       const dependencies = JSON.parse(res.stdout).dependencies
-      const packages = Array.prototype.filter.call(Object.keys(dependencies) || [], item => item.startsWith('@tool/'))
+      const packages = Array.prototype.filter.call(Object.keys(dependencies) || [], item => item.startsWith('@cli-tool/'))
       const tableData =  packages.map(item => {
         return {
           name: item,
