@@ -15,7 +15,7 @@ if (argv.version || argv.v) {
 }
 
 if (argv.update) {
-  spawn('npm', ['install', fs.readJsonSync(path.join(__dirname, '../package.json')).name, '-g', '--registry=https://registry-lpm.listenai.com'], {
+  spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['install', fs.readJsonSync(path.join(__dirname, '../package.json')).name, '-g', '--registry=https://registry-lpm.listenai.com'], {
     stdio: ['inherit', 'pipe', 'inherit'],
   })
   return
