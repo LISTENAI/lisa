@@ -12,6 +12,7 @@
         "allowDestructuring": true, // Allow `const { props, state } = this`; false by default
         "allowedNames": ["self"] // Allow `const self = this`; `[]` by default
       }
-    ]
+    ],
+    "complexity": ["error", { "max": 30 }]
   }
 }

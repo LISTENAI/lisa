@@ -54,7 +54,7 @@ export default class Tools extends Command {
       this.debug(info)
 
       // 3、判断是否新包
-      let versionCli
+      let versionCli: any
       if (info?.version && info?.maintainers) {
         if (!(info.maintainers || []).includes(`${lisaUserInfo.username} <${lisaUserInfo.email}>`)) {
           this.error(`当前登录账号无权限发布${name}`)
@@ -113,18 +113,33 @@ export default class Tools extends Command {
           cliName: cliName,
         })
       }
+      const nativeDialog = require('native-file-dialog')
       {
         cli.action.start('选择windows下可执行文件...')
         await cli.wait(1000)
-        const nativeDialog = require('native-file-dialog')
         let winTar = ''
-        while (!fs.existsSync(winTar)) {
+        let cancel = 0
+        while (!fs.existsSync(winTar) && cancel < 3) {
           winTar = nativeDialog.file_dialog()
+          if (winTar === '') {
+            cancel++
+          }
           this.debug(winTar)
         }
         cli.action.stop()
         await fs.project.mkdir('lib')
-        await fs.copyFileSync(winTar, path.resolve(path.join(fs.project.root, `lib/${cliName}-win32.exe`)))
+        fs.copyFileSync(winTar, path.resolve(path.join(fs.project.root, `lib/${cliName}-win32.exe`)))
+      }
+      {
+        cli.action.start('选择readme.md文件...')
+        await cli.wait(1000)
+        let readMe = ''
+        while (!fs.existsSync(readMe)) {
+          readMe = nativeDialog.file_dialog()
+          this.debug(readMe)
+        }
+        cli.action.stop()
+        fs.copyFileSync(readMe, path.resolve(path.join(fs.project.root, 'README.md')))
       }
 
       this.log(`即将发布 ${name} ，版本号为：`)
@@ -143,10 +158,10 @@ export default class Tools extends Command {
 
       // 6、发布
       this.debug(`npm ${['publish', `--registry=${application.registryUrl}`].join(' ')}`)
-      await cmd('npm', ['publish', `--registry=${application.registryUrl}`], {
-        cwd: fs.project.root,
-        stdio: 'inherit',
-      })
+      // await cmd('npm', ['publish', `--registry=${application.registryUrl}`], {
+      //   cwd: fs.project.root,
+      //   stdio: 'inherit',
+      // })
       return
     }
     // npm list -g --json --depth 0
@@ -155,7 +170,7 @@ export default class Tools extends Command {
       const res = await cmd('npm', ['list', '-g', '--json', '--depth', '0'])
       const dependencies = JSON.parse(res.stdout).dependencies
       const packages = Array.prototype.filter.call(Object.keys(dependencies) || [], item => item.startsWith('@cli-tool/'))
-      const tableData =  packages.map(item => {
+      const tableData = packages.map(item => {
         return {
           name: item,
           version: dependencies[item].version,
