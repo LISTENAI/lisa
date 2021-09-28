@@ -65,7 +65,7 @@ export default class Task extends Command {
       })
       this.log(JSON.stringify(tasks))
     } else if (argv.length > 0) {
-      lisa.runner(argv.join(','), {}, flags.verbose || process.env.LISA_TASK_VERBOSE === 'true' || false)
+      await lisa.runner(argv.join(','), {}, flags.verbose || process.env.LISA_TASK_VERBOSE === 'true' || false)
     } else {
       this.error('请输入至少一个可执行的task')
     }

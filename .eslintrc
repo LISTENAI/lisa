@@ -5,6 +5,7 @@
   ],
   "rules": {
     "no-negated-condition":"off",
+    "require-atomic-updates": "off",
     "node/no-unsupported-features/node-builtins":"warn",
     "@typescript-eslint/no-this-alias": [
       "error",
