@@ -1,7 +1,7 @@
 {
   "name": "@listenai/lisa",
   "description": "Lisa 是 Lisa Framework 核心命令行工具，提供模版生成能力以及任务执行命令",
-  "version": "2.1.0-beta.5",
+  "version": "2.1.0-beta.6",
   "author": "geekBoom.Zhao <zbzhao@listenai.com>",
   "bin": {
     "lisa": "./bin/run"
@@ -50,9 +50,7 @@
   "oclif": {
     "commands": "./lib/commands",
     "bin": "lisa",
-    "plugins": [
-      "@oclif/plugin-plugins"
-    ],
+    "plugins": [],
     "hooks": {
       "init": [
         "./lib/hooks/init/load",
@@ -61,7 +59,8 @@
         "./lib/hooks/init/check-update"
       ],
       "command_not_found": [
-        "./lib/hooks/command_not_found/custom-command"
+        "./lib/hooks/command_not_found/run-task",
+        "./lib/hooks/command_not_found/run-plugin"
       ]
     },
     "userPlugins": false

@@ -5,8 +5,6 @@ import {argv, loadPreRunTask, load} from '@listenai/lisa_core'
 const initLoad: Hook<'init'> = async function (options) {
   lisa.application.cacheDir = options.config.cacheDir
   lisa.application.argv = argv(options.argv)
-  this.debug('参数: %s', JSON.stringify(lisa.application.argv))
-
   lisa.application.debug = `lisa:${options.id}`
 
   if (options.id === 'task' && lisa.application.argv._.length > 0) {
