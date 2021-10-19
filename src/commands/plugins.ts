@@ -25,7 +25,7 @@ export default class Uninstall extends Command {
       ])
       // globalDependencies = JSON.parse(result[0].stdout).dependencies
       globalRoot = result[0].stdout
-    } catch (error: any) {
+    } catch (error) {
       this.debug(error)
     }
     const pluginsRoot = path.resolve(path.join(globalRoot, this.scopeName))

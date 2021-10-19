@@ -11,7 +11,7 @@ const runPlugin: Hook<'command_not_found'> = async function (options) {
       await cmd('npm', 'root -g'.split(' ')),
     ])
     globalRoot = result[0].stdout
-  } catch (error: any) {
+  } catch (error) {
     this.debug(error)
   }
 
