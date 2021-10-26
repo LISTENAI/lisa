@@ -2,9 +2,11 @@ import {Hook} from '@oclif/config'
 import lisa from '@listenai/lisa_core'
 import {loadFileSync} from '@listenai/lisa_core'
 import * as path from 'path'
+import {ParsedArgs} from 'minimist'
+import { threadId } from 'worker_threads'
 
 const runPlugin: Hook<'command_not_found'> = async function (options) {
-  const {cmd, fs} = lisa
+  const {cmd, fs, application, cli} = lisa
   let globalRoot = ''
   try {
     const result = await Promise.all([
@@ -43,6 +45,25 @@ const runPlugin: Hook<'command_not_found'> = async function (options) {
 
   if (targetPluginDir) {
     const argv = process.argv.slice(2)
+    if ((application.argv as ParsedArgs)._[0] === 'tasks') {
+      const taskDict = application.tasks
+      const tasks = Object.keys(taskDict).map((taskId: string) => {
+        return Object.assign(taskDict[taskId], {id: taskId})
+      })
+      cli.table(tasks, {
+        id: {
+          minWidth: 7,
+        },
+        name: {
+          minWidth: 7,
+          get: row => row.title,
+        },
+      }, {
+        printLine: this.log,
+      })
+      this.exit()
+    }
+
     await this.config.runCommand('task', argv)
 
     this.exit()
