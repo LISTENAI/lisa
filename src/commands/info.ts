@@ -77,7 +77,7 @@ export default class Info extends Command {
         const mainPath = fs.readJSONSync(path.join(pluginRoot, 'package.json'))?.main
         const main = require(path.join(pluginRoot, mainPath))
         if (main.env) {
-          const pluginEnv = main.env()
+          const pluginEnv = await main.env()
           this.log(
             'Project environment \n' +
             Object.keys(pluginEnv).map(key => {
