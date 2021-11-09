@@ -45,6 +45,22 @@ export default class Install extends Command {
     if (noSave) {
       packageJSON = fs.readFileSync(path.join(process.cwd(), 'package.json')).toString()
     }
+    let packageLock = ''
+    try {
+      if (noLock) {
+        packageLock = fs.readFileSync(path.join(process.cwd(), 'package-lock.json')).toString()
+      }
+    } catch (error) {
+      packageLock = ''
+    }
+    let yarnLock = ''
+    try {
+      if (noLock) {
+        yarnLock = fs.readFileSync(path.join(process.cwd(), 'yarn.lock')).toString()
+      }
+    } catch (error) {
+      yarnLock = ''
+    }
 
     try {
       this.debug(globalInstall ? 'npm' : 'yarn', command.join(' '))
@@ -69,8 +85,12 @@ export default class Install extends Command {
         fs.writeFileSync(path.join(process.cwd(), 'package.json'), packageJSON)
       }
       if (noLock) {
-        await fs.remove(path.join(process.cwd(), 'package-lock.json'))
-        await fs.remove(path.join(process.cwd(), 'yarn.lock'))
+        if (packageLock) {
+          fs.writeFileSync(path.join(process.cwd(), 'package-lock.json'), packageLock)
+        }
+        if (yarnLock) {
+          fs.writeFileSync(path.join(process.cwd(), 'yarn.lock'), yarnLock)
+        }
       }
     } catch (error) {
       cli.action.stop('失败')
