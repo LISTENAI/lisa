@@ -19,7 +19,7 @@ export default class Install extends Command {
   static strict = false
 
   async run() {
-    const {application, cli, exec, fs} = lisa
+    const {application, cli, exec, fs, cmd} = lisa
     const {argv} = this.parse(Install)
     const hasRegistry = argv.some(item => item.startsWith('--registry='))
     const globalInstall = argv.some(item => item === '-g' || item === '--global')
@@ -61,25 +61,30 @@ export default class Install extends Command {
     } catch (error) {
       yarnLock = ''
     }
-
     try {
       this.debug(globalInstall ? 'npm' : 'yarn', command.join(' '))
-      if (!logLevel) {
+      if (!logLevel && !globalInstall) {
         cli.action.start('安装依赖', '正在安装', {stdout: true})
-      }
-      const code = await exec(globalInstall ? 'npm' : 'yarn', command, undefined, line => {
-        if (!logLevel) {
-          this.debug(line)
-        } else {
-          this.log(line)
+        const code = await exec(globalInstall ? 'npm' : 'yarn', command, undefined, line => {
+          if (!logLevel) {
+            this.debug(line)
+          } else {
+            this.log(line)
+          }
+        })
+        this.debug(code)
+        if (code !==0) {
+          throw new Error('安装依赖失败')
         }
-      })
-      this.debug(code)
-      if (code === 0 && !noSave && !noLock) {
-        await loadTaskDict()
-      }
-      if (!logLevel) {
-        cli.action.stop(code === 0 ? '成功' : '失败')
+        if (!noSave && !noLock) {
+          await loadTaskDict()
+        }
+        cli.action.stop('成功')
+      } else {
+        await cmd(globalInstall ? 'npm' : 'yarn', command, {
+          shell: true,
+          stdio: 'inherit',
+        })
       }
       if (noSave) {
         fs.writeFileSync(path.join(process.cwd(), 'package.json'), packageJSON)
