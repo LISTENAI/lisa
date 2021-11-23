@@ -70,7 +70,11 @@ const runPlugin: Hook<'command_not_found'> = async function (options) {
     } else {
       const main = require(path.join(targetPluginDir, targetPluginJson?.main))
       if (main.undertake) {
-        await main.undertake(process.argv.slice(3))
+        try {
+          await main.undertake(process.argv.slice(3))
+        } catch (error) {
+
+        }
       }
     }
     this.exit()
