@@ -45,7 +45,9 @@ const runPlugin: Hook<'command_not_found'> = async function (options) {
 
   if (targetPluginDir) {
     const argv = process.argv.slice(2)
-    if ((application.argv as ParsedArgs)._[0] === 'tasks') {
+    const command = (application.argv as ParsedArgs)._[0]
+
+    if (command === 'tasks') {
       const taskDict = application.tasks
       const tasks = Object.keys(taskDict).map((taskId: string) => {
         return Object.assign(taskDict[taskId], {id: taskId})
@@ -63,9 +65,14 @@ const runPlugin: Hook<'command_not_found'> = async function (options) {
       })
       this.exit()
     }
-
-    await this.config.runCommand('task', argv)
-
+    if (Object.keys(application.tasks).includes(command)) {
+      await this.config.runCommand('task', argv)
+    } else {
+      const main = require(path.join(targetPluginDir, targetPluginJson?.main))
+      if (main.undertake) {
+        await main.undertake(process.argv.slice(3))
+      }
+    }
     this.exit()
   }
 }
