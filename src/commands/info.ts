@@ -2,6 +2,7 @@ import {Command} from '@oclif/command'
 import lisa from '@listenai/lisa_core'
 import * as os from 'os'
 import * as path from 'path'
+import lpmPkgVersion from '../util/lpmPkgVersion'
 
 export default class Info extends Command {
   static description = '查看环境信息'
@@ -75,13 +76,7 @@ export default class Info extends Command {
         }
 
         // 展示plugin版本
-        let pluginLatestVersion = ''
-        try {
-          const pluginDistTags = await cmd('npm', ['view', `@lisa-plugin/${targetPluginName}`, 'dist-tags', '--json', `--registry=${application.registryUrl}`])
-          pluginLatestVersion = JSON.parse(pluginDistTags.stdout)?.latest
-        } catch (error) {}
-
-
+        const pluginLatestVersion = await lpmPkgVersion(`@lisa-plugin/${targetPluginName}`)
         const pluginVersion = pluginPackage?.version || ''
         this.log(
           'Plugin info \n' +
