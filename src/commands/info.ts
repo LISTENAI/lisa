@@ -23,7 +23,7 @@ export default class Info extends Command {
   }
 
   async run() {
-    const {cmd, fs} = lisa
+    const {cmd, fs, application} = lisa
     const {args} = this.parse(Info)
     const targetPluginName = args?.pluginName
 
@@ -50,9 +50,10 @@ export default class Info extends Command {
       const pluginRoot = path.resolve(path.join(globalRoot, '@lisa-plugin', targetPluginName))
       if (fs.existsSync(path.join(pluginRoot, 'package.json'))) {
         // engines 获取global依赖环境
-        const engines = fs.readJSONSync(path.join(pluginRoot, 'package.json'))?.engines
+        const pluginPackage = await fs.readJSON(path.join(pluginRoot, 'package.json')) || {}
+        const engines = pluginPackage?.engines
         if (engines) {
-          const items = Object.keys(engines)
+          const items = Object.keys(engines).filter(item => !['node', 'npm'].includes(item))
           if (items.length > 0) {
             this.log('Global environment')
             const versions = await Promise.all(
@@ -73,18 +74,34 @@ export default class Info extends Command {
           }
         }
 
-        // main入口获取沙箱env环境
-        const mainPath = fs.readJSONSync(path.join(pluginRoot, 'package.json'))?.main
-        const main = require(path.join(pluginRoot, mainPath))
-        if (main.env) {
-          const pluginEnv = await main.env()
-          this.log(
-            'Project environment \n' +
-            Object.keys(pluginEnv).map(key => {
-              return `  ${key} - ${pluginEnv[key]}`
-            }).join('\n') +
-            '\n'
-          )
+        // 展示plugin版本
+        let pluginLatestVersion = ''
+        try {
+          const pluginDistTags = await cmd('npm', ['view', `@lisa-plugin/${targetPluginName}`, 'dist-tags', '--json', `--registry=${application.registryUrl}`])
+          pluginLatestVersion = JSON.parse(pluginDistTags.stdout)?.latest
+        } catch (error) {}
+
+
+        const pluginVersion = pluginPackage?.version || ''
+        this.log(
+          'Plugin info \n' +
+          `  ${targetPluginName} - ${pluginVersion} (latest: ${pluginLatestVersion})\n`
+        )
+
+        if (pluginPackage?.version) {
+          // main入口获取沙箱env环境
+          const mainPath = fs.readJSONSync(path.join(pluginRoot, 'package.json'))?.main
+          const main = require(path.join(pluginRoot, mainPath))
+          if (main.env) {
+            const pluginEnv = await main.env()
+            this.log(
+              'Plugin environment \n' +
+              Object.keys(pluginEnv).map(key => {
+                return `  ${key} - ${pluginEnv[key]}`
+              }).join('\n') +
+              '\n'
+            )
+          }
         }
       }
     }

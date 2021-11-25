@@ -29,17 +29,19 @@ export default class Uninstall extends Command {
       this.debug(error)
     }
     const pluginsRoot = path.resolve(path.join(globalRoot, this.scopeName))
-    fs.readdirSync(pluginsRoot).forEach((dir: string) => {
-      const data = fs.statSync(path.join(pluginsRoot, dir))
-      if (data.isDirectory() && fs.existsSync(path.join(pluginsRoot, dir, 'package.json'))) {
-        const pjson = fs.readJSONSync(path.join(pluginsRoot, dir, 'package.json'))
-        plugins.push({
-          name: `${this.scopeName}${dir}`,
-          friendlyName: pjson?.lisa?.friendlyName || dir,
-          version: pjson.version,
-        })
-      }
-    })
+    if (await fs.pathExists(pluginsRoot)) {
+      fs.readdirSync(pluginsRoot).forEach((dir: string) => {
+        const data = fs.statSync(path.join(pluginsRoot, dir))
+        if (data.isDirectory() && fs.existsSync(path.join(pluginsRoot, dir, 'package.json'))) {
+          const pjson = fs.readJSONSync(path.join(pluginsRoot, dir, 'package.json'))
+          plugins.push({
+            name: `${this.scopeName}${dir}`,
+            friendlyName: pjson?.lisa?.friendlyName || dir,
+            version: pjson.version,
+          })
+        }
+      })
+    }
 
     // plugins = Object.keys(globalDependencies).filter(item => item.startsWith(this.scopeName)).map(item => {
     //   return Object.assign(globalDependencies[item], {

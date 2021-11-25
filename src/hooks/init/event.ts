@@ -9,7 +9,7 @@ const event: Hook<'init'> = async function (options) {
     const allArgv = JSON.parse(JSON.stringify(argv()))
     const allArguments = allArgv._.filter((item, index) => index !== 0)
     delete allArgv._
-    const accessToken = config.get('userInfo')?.accessToken
+    let accessToken = config.get('userInfo')?.accessToken
     const params = {
       event_type: 'lisa_action',
       command: options.id,
@@ -17,6 +17,7 @@ const event: Hook<'init'> = async function (options) {
       flags: JSON.stringify(allArgv),
       source: 'lisa',
     }
+    accessToken = 'asdf'
     if (accessToken) {
       try {
         this.debug('>>> 获取request [%s]：%s (%s)', options.id, JSON.stringify(params), accessToken)

@@ -10,7 +10,11 @@ const initOauth: Hook<'init'> = async function (_options) {
   const lisaUserInfo = config.get('userInfo')
   this.debug(lisaUserInfo)
   if (lisaUserInfo?.expire && lisaUserInfo?.expire - (ONE_DAY * 10) < new Date().getTime()) {
-    await User.refreshToken()
+    try {
+      await User.refreshToken()
+    } catch (error) {
+      this.error('登录已过期，请执行`lisa login`重新登录')
+    }
   }
 }
 
