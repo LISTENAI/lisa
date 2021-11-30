@@ -66,8 +66,12 @@ export default class Info extends Command {
             items.forEach((key, index) => {
               const satisfies = require('semver/functions/satisfies')
               let msg = ''
-              if (!satisfies(versions[index].match(/(\d\d|\d)(.(\d\d|\d)){1,2}$/g)[0]||'', engines[key])) {
-                msg = `(error: ${key} need version ${engines[key]})`
+              try {
+                if (!satisfies(versions[index].match(/(\d\d|\d)(.(\d\d|\d)){1,2}$/g)[0]||'', engines[key])) {
+                  msg = `(error: ${key} need version ${engines[key]})`
+                }
+              } catch (error) {
+
               }
               enginesLog += `  ${key} - ${versions[index]} ${msg}\n`
             })

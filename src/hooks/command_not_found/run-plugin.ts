@@ -69,7 +69,13 @@ const runPlugin: Hook<'command_not_found'> = async function (options) {
       await this.config.runCommand('task', argv)
     } else {
       const main = require(path.join(targetPluginDir, targetPluginJson?.main))
-      if (main.undertake) {
+      if (main.default) {
+        try {
+          await main.default(process.argv.slice(3))
+        } catch (error) {
+
+        }
+      } else if (main.undertake) {
         try {
           await main.undertake(process.argv.slice(3))
         } catch (error) {
