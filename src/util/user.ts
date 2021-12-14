@@ -34,4 +34,16 @@ export default class User {
       config.set('userInfo', lisaUserInfo)
     }
   }
+
+  static async getUserInfo(accessToken: string) {
+    const {got} = lisa
+    const res = await got(`${User.AUTH_RELAY_SERVER}${User.SERVER_PREFIX}/user`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'User-Agent': 'LStudio',
+      },
+      responseType: 'json',
+    })
+    return res.body
+  }
 }

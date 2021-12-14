@@ -1,6 +1,7 @@
 import {Command} from '@oclif/command'
 import lisa from '@listenai/lisa_core'
 import * as Configstore from 'configstore'
+import User from '../util/user'
 
 export default class Login extends Command {
   static description = '登录'
@@ -56,20 +57,20 @@ export default class Login extends Command {
     })
   }
 
-  async getUserInfo(accessToken: string) {
-    const {got} = lisa
-    const res = await got(`${Login.AUTH_RELAY_SERVER}${Login.SERVER_PREFIX}/user`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'User-Agent': 'LStudio',
-      },
-      responseType: 'json',
-    })
+  // async getUserInfo(accessToken: string) {
+  //   const {got} = lisa
+  //   const res = await got(`${Login.AUTH_RELAY_SERVER}${Login.SERVER_PREFIX}/user`, {
+  //     headers: {
+  //       Authorization: `Bearer ${accessToken}`,
+  //       'User-Agent': 'LStudio',
+  //     },
+  //     responseType: 'json',
+  //   })
 
-    this.debug(res.body)
+  //   this.debug(res.body)
 
-    return res.body
-  }
+  //   return res.body
+  // }
 
   async getLSCloudToken(accessToken: string) {
     const {got} = lisa
@@ -105,7 +106,7 @@ export default class Login extends Command {
       refreshToken = refresh_token
       cli.action.start('登录授权成功，正在保存用户信息...')
       infoResult = await Promise.all([
-        this.getUserInfo(String(accessToken)),
+        User.getUserInfo(String(accessToken)),
         this.getLSCloudToken(String(accessToken)),
       ])
     } catch (error) {

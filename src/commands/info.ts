@@ -3,6 +3,8 @@ import lisa from '@listenai/lisa_core'
 import * as os from 'os'
 import * as path from 'path'
 import lpmPkgVersion from '../util/lpmPkgVersion'
+import User from '../util/user'
+import * as Configstore from 'configstore'
 
 export default class Info extends Command {
   static description = '查看环境信息'
@@ -30,6 +32,17 @@ export default class Info extends Command {
 
     this.log(`\nOperating System - ${(os as any).version()}, version ${os.release()} ${os.arch()} \n`)
     this.log(`@listenai/lisa - ${this.config.version}\n`)
+
+    const config = new Configstore('lisa')
+    const lisaUserInfo = config.get('userInfo')
+    let accountInfo
+    try {
+      const loginInfo = await User.getUserInfo(lisaUserInfo?.accessToken) as any
+      accountInfo = `${loginInfo.data.account}(${loginInfo.data.email})`
+    } catch (error) {
+      accountInfo = '未登录或登录已过期'
+    }
+    this.log(`Account - ${accountInfo}\n`)
     this.log(
       'Node.js environment \n' +
       `  Node.js - ${await this.getVersion('node')}\n` +
