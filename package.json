@@ -46,6 +46,11 @@
   "keywords": [
     "oclif"
   ],
+  "maintainers": [
+    "lpmadmin <lpm.admin@listenai.com>",
+    "geekzzboom <geekzzboom@gmail.com>",
+    "zbzhao <zbzhao@listenai.com>"
+  ],
   "license": "MIT",
   "main": "lib/index.js",
   "oclif": {
