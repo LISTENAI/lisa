@@ -5,7 +5,6 @@
 /out
 /.nyc_output
 /dist
-/package-lock.json
 /tmp
 node_modules
 log
