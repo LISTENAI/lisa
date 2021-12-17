@@ -1,7 +1,8 @@
-import {Command} from '@oclif/command'
+import {Command, flags} from '@oclif/command'
 import lisa from '@listenai/lisa_core'
 import * as Configstore from 'configstore'
 import User from '../util/user'
+import lpminit from '../util/lpminit'
 
 export default class Login extends Command {
   static description = '登录'
@@ -13,6 +14,14 @@ export default class Login extends Command {
   static CLIENT_ID = process.env.LISA_CLIENT_ID || '6d7bfd73-98ef-4c31-b39a-7601198e9b9c'
 
   static REQUEST_TIMES = 100
+
+  static flags = {
+    token: flags.string({
+      char: 't',
+      description: 'AccessToken',
+      required: false,
+    }),
+  };
 
   async clientCredential(): Promise<{ token_code: string; url: string }> {
     const {got} = lisa
@@ -89,28 +98,41 @@ export default class Login extends Command {
 
   async run() {
     const {cli} = lisa
-    const {token_code, url} = await this.clientCredential()
-    this.log('请使用手机浏览器扫描以下二维码进行登录')
-    const qrcode = require('qrcode-terminal')
-    qrcode.generate(url, {small: true}, qr => {
-      this.log(qr)
-    })
-    this.log(`或直接访问url进行登录：${url}`)
-    cli.action.start('等待登录授权...')
+    const {flags} = this.parse(Login)
+    const {token} = flags
+
     let infoResult = null
     let accessToken = ''
     let refreshToken = ''
+
+    if (!token) {
+      const {token_code, url} = await this.clientCredential()
+      this.log('请使用手机浏览器扫描以下二维码进行登录')
+      const qrcode = require('qrcode-terminal')
+      qrcode.generate(url, {small: true}, qr => {
+        this.log(qr)
+      })
+      this.log(`或直接访问url进行登录：${url}`)
+      cli.action.start('等待登录授权...')
+      try {
+        const {access_token, refresh_token} = await this.getAccessToken(token_code)
+        accessToken = access_token
+        refreshToken = refresh_token
+        cli.action.start('登录授权成功，正在保存用户信息...')
+      } catch (error) {
+        this.error('登录超时或失败')
+      }
+    } else {
+      accessToken = token
+    }
+
     try {
-      const {access_token, refresh_token} = await this.getAccessToken(token_code)
-      accessToken = access_token
-      refreshToken = refresh_token
-      cli.action.start('登录授权成功，正在保存用户信息...')
       infoResult = await Promise.all([
         User.getUserInfo(String(accessToken)),
         this.getLSCloudToken(String(accessToken)),
       ])
     } catch (error) {
-      this.error('登录超时或失败')
+      this.error('获取用户信息失败')
     }
 
     this.debug(infoResult)
@@ -140,6 +162,8 @@ export default class Login extends Command {
 
     const config = new Configstore('lisa')
     config.set('userInfo', userInfo)
+
+    await lpminit()
 
     cli.action.stop('完成')
     this.log('登录成功')
