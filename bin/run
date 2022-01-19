@@ -14,20 +14,25 @@ Sentry.init({
 
 require('@oclif/command').run()
 .then(require('@oclif/command/flush'))
-.catch((error) => {
+.catch(async (error) => {
   const oclifHandler = require('@oclif/errors/handle')
   // do any extra work with error
   const Configstore = require('configstore')
   const config = new Configstore('lisa')
   const lisaUserInfo = config.get('userInfo') || {}
-  Sentry.configureScope(scope => {
-    scope.setTag('userid', lisaUserInfo.id);
-    scope.setTag('username', lisaUserInfo.username);
-    scope.setTag('accountName', lisaUserInfo.accountName);
-    scope.setTag('email', lisaUserInfo.email);
-    scope.setTag('accessToken', lisaUserInfo.accessToken);
-  });
-  Sentry.captureException(error)
+
+  await new Promise((res, _rej) => {
+    Sentry.withScope(function(scope) {
+      scope.setTag('userid', lisaUserInfo.id);
+      scope.setTag('username', lisaUserInfo.username);
+      scope.setTag('accountName', lisaUserInfo.accountName);
+      scope.setTag('email', lisaUserInfo.email);
+      scope.setTag('accessToken', lisaUserInfo.accessToken);
+      Sentry.captureException(error, () => {
+        res()
+      });
+    });
+  })
   return oclifHandler(error)
 })
 
