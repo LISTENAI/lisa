@@ -51,6 +51,7 @@ export default class Login extends Command {
           const {body}: {body: any}  = await got(`${Login.AUTH_RELAY_SERVER}/auth_server/oauth/token_code/confirm?token_code=${token_code}`, {
             responseType: 'json',
           })
+          this.debug(`token_code=${token_code}`)
           this.debug(body)
           if (body.access_token) {
             clearInterval(timmer)
