@@ -1,4 +1,4 @@
-name: release
+name: latest
 
 on:
   release:
@@ -18,9 +18,12 @@ jobs:
           npm config set //registry-lpm.listenai.com/:username zbzhao
           npm config set //registry-lpm.listenai.com/:email zbzhao@listenai.com
           npm config set //registry-lpm.listenai.com/:always-auth true
-      - run: npm install -–force
-      - run: npm run prepack
-      - run: npm publish --registry=https://registry-lpm.listenai.com
-      - uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
+          npm config set //registry.npmjs.org/:_authToken ${{ secrets.NPM_TOKEN }}
+      - uses: battila7/get-version-action@v2
+        id: get_version
+      - run: npm dist-tag add @listenai/lisa@${{ steps.get_version.outputs.version-without-v }} latest
+      - run: npm dist-tag add @listenai/lisa@${{ steps.get_version.outputs.version-without-v }} latest --registry=https://registry-lpm.listenai.com
+
+
+
+

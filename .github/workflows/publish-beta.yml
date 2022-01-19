@@ -1,8 +1,8 @@
-name: prereleased
+name: beta
 
 on:
-  release:
-    types: [prereleased]
+  push:
+    tags: ['v*']
 
 jobs:
   publish:
