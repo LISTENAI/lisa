@@ -23,11 +23,12 @@ require('@oclif/command').run()
 
   await new Promise((res, _rej) => {
     Sentry.withScope(function(scope) {
-      scope.setTag('userid', lisaUserInfo.id);
-      scope.setTag('username', lisaUserInfo.username);
-      scope.setTag('accountName', lisaUserInfo.accountName);
-      scope.setTag('email', lisaUserInfo.email);
-      scope.setTag('accessToken', lisaUserInfo.accessToken);
+      scope.setTag('lisaVersion', config.get('version') || '');
+      scope.setTag('userid', lisaUserInfo.id || '');
+      scope.setTag('username', lisaUserInfo.username || '');
+      scope.setTag('accountName', lisaUserInfo.accountName || '');
+      scope.setTag('email', lisaUserInfo.email || '');
+      scope.setTag('accessToken', lisaUserInfo.accessToken || '');
       Sentry.captureException(error, () => {
         res()
       });

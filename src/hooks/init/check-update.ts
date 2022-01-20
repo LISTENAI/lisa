@@ -31,6 +31,7 @@ const checkUpdate: Hook<'init'> = async function (_options) {
 
   const nowVersion = this.config.version
   this.debug('当前版本 %s', nowVersion)
+  config.set('version', nowVersion)
   let latestVersion = versionCheckInfo?.latest || ''
   // 当无记录到latest版本，或expire过期
   if (!latestVersion || (versionCheckInfo?.expire && versionCheckInfo?.expire - new Date().getTime() <= 0)) {
