@@ -6,7 +6,10 @@ if (process.argv.indexOf('--debug') >= 0) {
 
 if (process.env.LISA_PREFIX) {
   const oldPath = process.env[findPathKey()]
-  const newPath = oldPath.split(';').filter(item => item.toLowerCase().indexOf('git') > 0)
+  const newPath = oldPath.split(';').filter(item => {
+    // 保留git和系统相关Path
+    return item.toLowerCase().indexOf('git') > 0 || item.toLowerCase().indexOf('windows') > 0
+  })
   newPath.push(process.env.LISA_PREFIX)
   process.env[findPathKey()] = `${newPath.join(';')}`
 }
