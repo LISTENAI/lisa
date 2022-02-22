@@ -41,7 +41,7 @@ jobs:
         npm prefix -g
         npm root -g
         npm bin -g
-        npm install -g @listenai/lisa
+        npm install -g @listenai/lisa@beta
 
     - name: Make bundle
       run: |
