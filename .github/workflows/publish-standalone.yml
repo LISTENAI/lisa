@@ -2,7 +2,7 @@ name: publish-standalone
 
 on:
   push:
-    branches: [ 'feature/standalone' ]
+    branches: [ 'master' ]
 
 env:
   node_ver: v16.14.0
