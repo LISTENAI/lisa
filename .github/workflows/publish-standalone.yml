@@ -1,8 +1,10 @@
 name: publish-standalone
 
+needs: publish-beta
+
 on:
   push:
-    branches: [ 'master' ]
+    tags: ['v*']
 
 env:
   node_ver: v16.14.0
@@ -42,6 +44,7 @@ jobs:
         npm root -g
         npm bin -g
         npm install -g @listenai/lisa@beta
+        npm install -g yarn
 
     - name: Make bundle
       run: |
@@ -85,6 +88,7 @@ jobs:
         npm root -g
         npm bin -g
         npm install -g @listenai/lisa@beta
+        npm install -g yarn
 
     - name: Make bundle
       run: |

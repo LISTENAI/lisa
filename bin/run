@@ -5,21 +5,20 @@ if (process.argv.indexOf('--debug') >= 0) {
 }
 
 if (process.env.LISA_PREFIX) {
-  process.env = {
-    [findPathKey()]: `${process.env.LISA_PREFIX}`
-  }
+  const oldPath = process.env[findPathKey()]
+  const newPath = oldPath.split(';').filter(item => item.toLowerCase().indexOf('git') > 0)
+  newPath.push(process.env.LISA_PREFIX)
+  process.env[findPathKey()] = `${newPath.join(';')}`
 }
 
 function findPathKey() {
   for (const key in process.env) {
     if (key.toLowerCase() == 'path') {
-      return key;
+      return key
     }
   }
-  return 'PATH';
+  return 'PATH'
 }
-
-console.log(process.env)
 
 const Sentry = require('@sentry/node')
 Sentry.init({
