@@ -1,7 +1,7 @@
 {
   "name": "@listenai/lisa",
   "description": "Lisa 是 Lisa Framework 核心命令行工具，提供模版生成能力以及任务执行命令",
-  "version": "2.1.6",
+  "version": "2.2.0-beta.0",
   "author": "geekBoom.Zhao <zbzhao@listenai.com>",
   "bin": {
     "lisa": "./bin/run"

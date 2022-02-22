@@ -4,6 +4,23 @@ if (process.argv.indexOf('--debug') >= 0) {
   process.argv = process.argv.filter(item => item !== '--debug')
 }
 
+if (process.env.LISA_PREFIX) {
+  process.env = {
+    [findPathKey()]: `${process.env.LISA_PREFIX}`
+  }
+}
+
+function findPathKey() {
+  for (const key in process.env) {
+    if (key.toLowerCase() == 'path') {
+      return key;
+    }
+  }
+  return 'PATH';
+}
+
+console.log(process.env)
+
 const Sentry = require('@sentry/node')
 Sentry.init({
   dsn: 'http://043e699dd29e4c6fb1de231a729f8aa4@sentry.iflyos.cn/95',
