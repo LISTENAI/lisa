@@ -12,6 +12,7 @@ if (process.env.LISA_PREFIX) {
   })
   newPath.push(process.env.LISA_PREFIX)
   process.env[findPathKey()] = `${newPath.join(';')}`
+  delete process.env['HOME']
 }
 
 function findPathKey() {
