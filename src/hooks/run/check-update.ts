@@ -1,4 +1,3 @@
-import {Hook} from '@oclif/config'
 import * as Configstore from 'configstore'
 import lisa from '@listenai/lisa_core'
 import compare from '../../util/compare'
@@ -7,7 +6,7 @@ const ONE_DAY = 86400000
 
 async function getLatestVersion() {
   const config = new Configstore('lisa')
-  const {application, cmd} = lisa
+  const { application, cmd } = lisa
   try {
     const res = await cmd('npm', ['view', '@listenai/lisa', 'dist-tags'])
     const distTags = JSON.parse(res.stdout.replace(/(\s*?{\s*?|\s*?,\s*?)(['"])?([a-zA-Z0-9]+)(['"])?:/g, '$1"$3":').replace(/'/g, '"'))
@@ -24,7 +23,7 @@ async function getLatestVersion() {
   return '0.0.0'
 }
 
-const checkUpdate: Hook<'init'> = async function (_options) {
+const checkUpdate = async function () {
   const config = new Configstore('lisa')
   const versionCheckInfo = config.get('versionCheckInfo')
   this.debug(versionCheckInfo)
@@ -40,6 +39,7 @@ const checkUpdate: Hook<'init'> = async function (_options) {
   if (compare(nowVersion, latestVersion) < 0) {
     this.log(`发现可更新的版本: ${latestVersion}，执行 lisa update 进行更新`)
   }
+
 }
 
 export default checkUpdate

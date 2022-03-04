@@ -34,7 +34,7 @@
     "typescript": "^3.3"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">= 8.0.0"
   },
   "files": [
     "/bin",
@@ -61,13 +61,14 @@
     "hooks": {
       "init": [
         "./lib/hooks/init/load",
-        "./lib/hooks/init/oauth",
-        "./lib/hooks/init/event"
+        "./lib/hooks/init/oauth"
       ],
       "command_not_found": [
         "./lib/hooks/command_not_found/run-task",
         "./lib/hooks/command_not_found/run-plugin"
-      ]
+      ],
+      "checkUpdate": "./lib/hooks/run/check-update",
+      "event": "./lib/hooks/run/event"
     },
     "userPlugins": false
   },
@@ -97,7 +98,7 @@
   "scripts": {
     "postpack": "rimraf oclif.manifest.json",
     "posttest": "eslint . --ext .ts --config .eslintrc",
-    "prepack": "node prepack.js && tsc -b && oclif-dev manifest",
+    "prepack": "node prepack.js && tsc -b  && node afterpack.js &&  oclif-dev manifest",
     "version": "oclif-dev readme && git add README.md"
   },
   "types": "lib/index.d.ts"
