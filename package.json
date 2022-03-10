@@ -1,7 +1,7 @@
 {
   "name": "@listenai/lisa",
   "description": "Lisa 是 Lisa Framework 核心命令行工具，提供模版生成能力以及任务执行命令",
-  "version": "2.3.0-beta.0",
+  "version": "2.3.0-beta.1",
   "author": "geekBoom.Zhao <zbzhao@listenai.com>",
   "bin": {
     "lisa": "./bin/run"
@@ -18,6 +18,7 @@
     "configstore": "^5.0.0",
     "inquirer": "^8.1.5",
     "native-file-dialog": "^0.2.0",
+    "patch-package": "^6.4.7",
     "qrcode-terminal": "^0.12.0",
     "semver": "^7.3.5",
     "tslib": "^1"
@@ -99,7 +100,8 @@
     "postpack": "rimraf oclif.manifest.json",
     "posttest": "eslint . --ext .ts --config .eslintrc",
     "prepack": "node prepack.js && tsc -b  && node afterpack.js &&  oclif-dev manifest",
-    "version": "oclif-dev readme && git add README.md"
+    "version": "oclif-dev readme && git add README.md",
+    "postinstall": "patch-package"
   },
   "types": "lib/index.d.ts"
 }

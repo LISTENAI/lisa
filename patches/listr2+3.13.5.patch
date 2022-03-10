@@ -1,0 +1,14 @@
+diff --git a/node_modules/listr2/dist/lib/task-wrapper.js b/node_modules/listr2/dist/lib/task-wrapper.js
+index 92be7df..548a7d8 100644
+--- a/node_modules/listr2/dist/lib/task-wrapper.js
++++ b/node_modules/listr2/dist/lib/task-wrapper.js
+@@ -19,6 +19,9 @@ class TaskWrapper {
+     }
+     /** Change the title of the current task. */
+     set title(data) {
++        if (!this.title) {
++          console.log('\n');
++        }
+         this.task.title$ = data;
+     }
+     /** Get the title of the current task. */
