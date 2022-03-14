@@ -1,10 +1,9 @@
 #!/usr/bin/env node
-import { Command } from '@oclif/command'
 if (process && process.argv.indexOf('--debug') >= 0) {
   process.env.DEBUG = '*'
   process.argv = process.argv.filter(item => item !== '--debug')
 }
-
+import { Command } from '@oclif/command'
 if (process.env.LISA_PREFIX) {
   const oldPath = process.env[findPathKey()]
   const newPath = oldPath.split(';').filter(item => {
