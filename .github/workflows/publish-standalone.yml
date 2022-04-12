@@ -49,6 +49,7 @@ jobs:
         npm bin -g
         npm install -g @listenai/lisa@beta
         npm install -g yarn
+        npm install -g @lisa-plugin/zephyr --registry=https://registry-lpm.listenai.com
 
     - name: Make bundle
       run: |
