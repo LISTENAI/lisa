@@ -7,7 +7,7 @@ import { Command } from '@oclif/command'
 import { platform } from 'os'
 if (process.env.LISA_PREFIX) {
   const oldPath = process.env[findPathKey()]
-  let newPath
+  let newPath = []
   switch(platform()) {
     case 'win32':
       newPath = oldPath.split(';').filter(item => {
