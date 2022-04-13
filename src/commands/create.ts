@@ -1,9 +1,10 @@
 /* eslint-disable node/no-unsupported-features/node-builtins */
-import {Command, flags} from '@oclif/command'
+import { Command, flags } from '@oclif/command'
 import lisa from '@listenai/lisa_core'
-import {loadTaskDict} from '@listenai/lisa_core'
+import { loadTaskDict } from '@listenai/lisa_core'
 import * as path from 'path'
 import lpminit from '../util/lpminit'
+import * as Configstore from 'configstore'
 
 export default class Create extends Command {
   static description = '创建项目，例`lisa create newProject -t @generator/csk`';
@@ -25,8 +26,8 @@ export default class Create extends Command {
   };
 
   async getProjectName() {
-    const {args} = this.parse(Create)
-    const {cli} = lisa
+    const { args } = this.parse(Create)
+    const { cli } = lisa
     // let projectName = ''
     // while (!projectName.match(/^[_a-zA-Z0-9-]{1,}$/)) {
     // if (projectName) {
@@ -41,7 +42,7 @@ export default class Create extends Command {
   }
 
   async getGenerator() {
-    const {flags} = this.parse(Create)
+    const { flags } = this.parse(Create)
     const generator = flags.template || ''
     return generator
   }
@@ -49,9 +50,13 @@ export default class Create extends Command {
   async run() {
     // this.log('启动创建...')
     const DEBUG = process.env.LISA_ENV === 'debug'
-    const {args, flags} = this.parse(Create)
-    const {fs, application, cmd, job, runner} = lisa
-
+    const { args, flags } = this.parse(Create)
+    const { fs, application, cmd, job, runner } = lisa
+    const config = new Configstore('lisa')
+    const lisaUserInfo = config.get('userInfo') || {}
+    if (!lisaUserInfo?.username) {
+      throw new Error('请先登录，执行`lisa login`')
+    }
     job('lisa:create', {
       title: '启动创建...',
       task: async (ctx, task) => {
@@ -65,7 +70,7 @@ export default class Create extends Command {
         ctx.projectName = projectName
         const generator = ctx.generator || await (async () => {
           const command = `search generator --long --json --registry=${application.registryUrl}`
-          const {stdout} = await cmd('npm', command.split(' '))
+          const { stdout } = await cmd('npm', command.split(' '))
           let generators = JSON.parse(stdout)
           if (!DEBUG) {
             generators = generators.filter(item => !['@generator/board', '@generator/lpm-pkg'].includes(item.name))
@@ -83,7 +88,7 @@ export default class Create extends Command {
     })
 
     // eslint-disable-next-line prefer-const
-    let {projectName, generator} = (await runner('lisa:create', {
+    let { projectName, generator } = (await runner('lisa:create', {
       projectName: args.name,
       generator: flags.template,
     }) as {

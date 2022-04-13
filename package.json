@@ -62,8 +62,7 @@
     "plugins": [],
     "hooks": {
       "init": [
-        "./lib/hooks/init/load",
-        "./lib/hooks/init/oauth"
+        "./lib/hooks/init/load"
       ],
       "command_not_found": [
         "./lib/hooks/command_not_found/run-task",

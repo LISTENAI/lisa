@@ -1,4 +1,4 @@
-import {Command} from '@oclif/command'
+import { Command } from '@oclif/command'
 import lisa from '@listenai/lisa_core'
 import lpminit from '../util/lpminit'
 import * as path from 'path'
@@ -19,10 +19,10 @@ export default class Tools extends Command {
   static strict = false
 
   async run() {
-    const {application, cmd, cli, fs} = lisa
-    const {args} = this.parse(Tools)
+    const { application, cmd, cli, fs } = lisa
+    const { args } = this.parse(Tools)
     const config = new Configstore('lisa')
-    const lisaUserInfo = config.get('userInfo')
+    const lisaUserInfo = config.get('userInfo') || {}
     // 发布
     if (args.publish) {
       // 1、获取lpm包名
@@ -42,9 +42,9 @@ export default class Tools extends Command {
       try {
         this.debug(`npm ${['view', name, 'version', 'maintainers', '--json', `--registry=${application.registryUrl}`].join(' ')}`)
         const res = await cmd('npm', ['view', name, 'version', 'maintainers', 'description', 'bin', 'author', '--json', `--registry=${application.registryUrl}`])
-        info = JSON.parse(res.stdout)
+        info = res.stdout && JSON.parse(res.stdout)
       } catch (error) {
-        if (JSON.parse(error.stdout).error.code.endsWith('404')) {
+        if (error.stdout && JSON.parse(error.stdout).error.code.endsWith('404')) {
           this.debug('这个包不存在噢')
         } else {
           this.debug(error)
@@ -52,11 +52,10 @@ export default class Tools extends Command {
         }
       }
       this.debug(info)
-
       // 3、判断是否新包
       let versionCli: any
       if (info?.version && info?.maintainers) {
-        if (!(info.maintainers || []).includes(`${lisaUserInfo.username} <${lisaUserInfo.email}>`)) {
+        if (!(info.maintainers || []).includes(`${lisaUserInfo?.username} <${lisaUserInfo?.email}>`)) {
           this.error(`当前登录账号无权限发布${name}`)
         }
         versionCli = await inquirer.prompt({
@@ -87,7 +86,7 @@ export default class Tools extends Command {
       })
 
       const author = await cli.prompt('作者', {
-        default: info?.author || `${lisaUserInfo.username} <${lisaUserInfo.email}>`,
+        default: info?.author || `${lisaUserInfo?.username} <${lisaUserInfo?.email}>`,
         required: true,
       })
 
@@ -168,7 +167,7 @@ export default class Tools extends Command {
     try {
       this.debug(`npm ${['list', '-g', '--json', '--depth', '0'].join(' ')}`)
       const res = await cmd('npm', ['list', '-g', '--json', '--depth', '0'])
-      const dependencies = JSON.parse(res.stdout).dependencies
+      const dependencies = res.stdout && JSON.parse(res.stdout).dependencies
       const packages = Array.prototype.filter.call(Object.keys(dependencies) || [], item => item.startsWith('@cli-tool/'))
       const tableData = packages.map(item => {
         return {

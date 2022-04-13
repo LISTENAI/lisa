@@ -11,13 +11,13 @@ export default class User {
   static CLIENT_SECRET = process.env.LISA_CLIENT_SECRET || 'a8e8e4f4-99a2-4815-8926-93a4b4721412'
 
   static async refreshToken() {
-    const {application, got} = lisa
+    const { application, got } = lisa
     const config = new Configstore('lisa')
-    const lisaUserInfo = config.get('userInfo')
+    const lisaUserInfo = config.get('userInfo') || {}
 
     if (lisaUserInfo?.refreshToken) {
       application.debug(`${User.AUTH_RELAY_SERVER}/auth_server/oauth/token?grant_type=refresh_token&refresh_token=${lisaUserInfo?.refreshToken}&client_id=${User.CLIENT_ID}&client_secret=${User.CLIENT_SECRET}`)
-      const {body}: {
+      const { body }: {
         body: {
           access_token: string;
           refresh_token: string;
@@ -36,7 +36,7 @@ export default class User {
   }
 
   static async getUserInfo(accessToken: string) {
-    const {got} = lisa
+    const { got } = lisa
     const res = await got(`${User.AUTH_RELAY_SERVER}${User.SERVER_PREFIX}/user`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
