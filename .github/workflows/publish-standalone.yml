@@ -1,14 +1,9 @@
 name: publish-standalone
 
 on:
-  push:
-    branches:
-      - feature/standalone
-
-# on:
-#   workflow_run:
-#     workflows: ["publish-beta", 'publish-latest']
-#     types: [completed]
+  workflow_run:
+    workflows: ["publish-beta", 'publish-latest']
+    types: [completed]
 
 env:
   node_ver: v16.14.0
@@ -155,6 +150,7 @@ jobs:
         bucket: iflyos-external
         assets: |
           lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }}:/public/cskTools/lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }}
+          $HOME/.listenai/lisa/libexec/install.sh:/public/cskTools/install.sh
 
   # test-pwsh:
   #   needs: bundle-pwsh
