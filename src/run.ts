@@ -4,15 +4,27 @@ if (process && process.argv.indexOf('--debug') >= 0) {
   process.argv = process.argv.filter(item => item !== '--debug')
 }
 import { Command } from '@oclif/command'
+import { platform } from 'os'
 if (process.env.LISA_PREFIX) {
   const oldPath = process.env[findPathKey()]
-  const newPath = oldPath.split(';').filter(item => {
-    // 保留git和系统相关Path
-    return item.toLowerCase().indexOf('git') > 0 || item.toLowerCase().indexOf('windows') > 0
-  })
-  newPath.push(process.env.LISA_PREFIX)
-  process.env[findPathKey()] = `${newPath.join(';')}`
-  delete process.env['HOME']
+  let newPath = []
+  switch(platform()) {
+    case 'win32':
+      newPath = oldPath.split(';').filter(item => {
+        // 保留git和系统相关Path
+        return item.toLowerCase().indexOf('git') > 0 || item.toLowerCase().indexOf('windows') > 0
+      })
+      newPath.push(process.env.LISA_PREFIX)
+      process.env[findPathKey()] = `${newPath.join(';')}`
+      delete process.env['HOME']
+      break
+    case 'darwin':
+      newPath.push(`${process.env.LISA_PREFIX}/libexec`)
+      newPath.push(`${process.env.LISA_PREFIX}/bin`)
+      newPath = newPath.concat(oldPath)
+      process.env[findPathKey()] = `${newPath.join(':')}`
+      break
+  }
 }
 
 function findPathKey(): string {
