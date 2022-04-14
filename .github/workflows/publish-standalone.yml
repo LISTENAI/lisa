@@ -20,10 +20,10 @@ jobs:
     strategy:
       matrix:
         include:
-        - os: ubuntu-latest
-          format: .tar.xz
-          node_suffix: linux-x64
-          dist_suffix: linux_x64
+        # - os: ubuntu-latest
+        #   format: .tar.xz
+        #   node_suffix: linux-x64
+        #   dist_suffix: linux_x64
         - os: macos-latest
           format: .tar.gz
           node_suffix: darwin-x64
@@ -105,46 +105,56 @@ jobs:
   #       name: lisa-standalone-${{ matrix.dist_suffix }}
   #       path: lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }}
 
-  # test-bash:
-  #   needs: bundle-bash
-  #   runs-on: ${{ matrix.os }}
+  test-bash:
+    needs: bundle-bash
+    runs-on: ${{ matrix.os }}
 
-  #   strategy:
-  #     matrix:
-  #       include:
-  #       - os: ubuntu-latest
-  #         format: .tar.xz
-  #         dist_suffix: linux_x64
-  #       - os: macos-latest
-  #         format: .tar.gz
-  #         dist_suffix: darwin_x64
+    strategy:
+      matrix:
+        include:
+        # - os: ubuntu-latest
+        #   format: .tar.xz
+        #   dist_suffix: linux_x64
+        - os: macos-latest
+          format: .tar.gz
+          dist_suffix: darwin_x64
 
-  #   steps:
-  #   - name: Remove pre-installed Node
-  #     run: |
-  #       which node
-  #       node -v
-  #       rm -f `which node`
-  #       node -v || echo Node removed
+    steps:
+    - name: Remove pre-installed Node
+      run: |
+        which node
+        node -v
+        rm -f `which node`
+        node -v || echo Node removed
 
-  #   - name: Download artifact
-  #     uses: actions/download-artifact@v2
-  #     with:
-  #       name: lisa-standalone-${{ matrix.dist_suffix }}
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: lisa-standalone-${{ matrix.dist_suffix }}
 
-  #   - name: Extract LISA
-  #     run: |
-  #       mkdir -p $HOME/.listenai/lisa
-  #       tar xf lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }} -C $HOME/.listenai/lisa
+    - name: Extract LISA
+      run: |
+        mkdir -p $HOME/.listenai/lisa
+        tar xf lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }} -C $HOME/.listenai/lisa
 
-  #   - name: Test LISA
-  #     run: |
-  #       export PATH=$HOME/.listenai/lisa/bin:$PATH
-  #       lisa info
-  #       if [[ -n "$(which node)" ]]; then
-  #         echo Node Leaks
-  #         exit 1
-  #       fi
+    - name: Test LISA
+      run: |
+        export PATH=$HOME/.listenai/lisa/libexec:$PATH
+        export PATH=$HOME/.listenai/lisa/bin:$PATH
+        $HOME/.listenai/lisa/bin/node -e "console.log(require('os').platform())"
+        echo $PATH
+        lisa info zephyr
+
+    - name: Upload to oss
+      id: upload_to_oss
+      uses: tvrcgo/upload-to-oss@master
+      with:
+        key-id: ${{ secrets.OSS_KEY_ID }}
+        key-secret: ${{ secrets.OSS_KEY_SECRET }}
+        region: oss-cn-shanghai
+        bucket: iflyos-external
+        assets: |
+          lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }}:/public/cskTools/lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }}
 
   # test-pwsh:
   #   needs: bundle-pwsh
