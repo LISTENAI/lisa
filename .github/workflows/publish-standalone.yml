@@ -149,8 +149,7 @@ jobs:
         region: oss-cn-shanghai
         bucket: iflyos-external
         assets: |
-          lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }}:/public/cskTools/lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }}
-          $HOME/.listenai/lisa/libexec/install.sh:/public/cskTools/install.sh
+          lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }}:/public/cskTools/lisa-zephyr-${{ matrix.dist_suffix }}${{ matrix.format }}
 
   # test-pwsh:
   #   needs: bundle-pwsh
