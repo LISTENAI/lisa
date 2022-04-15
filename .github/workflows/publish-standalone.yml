@@ -15,10 +15,10 @@ jobs:
     strategy:
       matrix:
         include:
-        - os: ubuntu-latest
-          format: .tar.xz
-          node_suffix: linux-x64
-          dist_suffix: linux_x64
+        # - os: ubuntu-latest
+        #   format: .tar.xz
+        #   node_suffix: linux-x64
+        #   dist_suffix: linux_x64
         - os: macos-latest
           format: .tar.gz
           node_suffix: darwin-x64
@@ -42,13 +42,13 @@ jobs:
         npm prefix -g
         npm root -g
         npm bin -g
-        npm install -g @listenai/lisa@beta
+        npm install -g @listenai/lisa
         npm install -g yarn
+        npm install -g @lisa-plugin/zephyr --registry=https://registry-lpm.listenai.com
 
     - name: Make bundle
       run: |
-        mv -v node/bin node/libexec
-        cp -vR standalone/bash node/bin
+        cp -vR standalone/bash node/libexec
         cd node && tar caf ../lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }} .
 
     - name: Upload artifacts
@@ -57,48 +57,48 @@ jobs:
         name: lisa-standalone-${{ matrix.dist_suffix }}
         path: lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }}
 
-  bundle-pwsh:
-    runs-on: ${{ matrix.os }}
+  # bundle-pwsh:
+  #   runs-on: ${{ matrix.os }}
 
-    strategy:
-      matrix:
-        include:
-        - os: windows-latest
-          format: .zip
-          node_suffix: win-x64
-          dist_suffix: win32_x64
+  #   strategy:
+  #     matrix:
+  #       include:
+  #       - os: windows-latest
+  #         format: .zip
+  #         node_suffix: win-x64
+  #         dist_suffix: win32_x64
 
-    steps:
-    - uses: actions/checkout@v2
+  #   steps:
+  #   - uses: actions/checkout@v2
 
-    - name: Download Node distribution
-      run: Invoke-WebRequest https://nodejs.org/dist/${{ env.node_ver }}/node-${{ env.node_ver }}-${{ matrix.node_suffix }}${{ matrix.format }} -OutFile node-${{ env.node_ver }}-${{ matrix.node_suffix }}${{ matrix.format }}
+  #   - name: Download Node distribution
+  #     run: Invoke-WebRequest https://nodejs.org/dist/${{ env.node_ver }}/node-${{ env.node_ver }}-${{ matrix.node_suffix }}${{ matrix.format }} -OutFile node-${{ env.node_ver }}-${{ matrix.node_suffix }}${{ matrix.format }}
 
-    - name: Extract Node
-      run: |
-        unzip node-${{ env.node_ver }}-${{ matrix.node_suffix }}${{ matrix.format }}
-        mv node-${{ env.node_ver }}-${{ matrix.node_suffix }} node
+  #   - name: Extract Node
+  #     run: |
+  #       unzip node-${{ env.node_ver }}-${{ matrix.node_suffix }}${{ matrix.format }}
+  #       mv node-${{ env.node_ver }}-${{ matrix.node_suffix }} node
 
-    - name: Install LISA
-      run: |
-        $env:Path = "$pwd\node;$env:Path"
-        $env:npm_config_prefix = "$pwd\node"
-        npm prefix -g
-        npm root -g
-        npm bin -g
-        npm install -g @listenai/lisa@beta
-        npm install -g yarn
+  #   - name: Install LISA
+  #     run: |
+  #       $env:Path = "$pwd\node;$env:Path"
+  #       $env:npm_config_prefix = "$pwd\node"
+  #       npm prefix -g
+  #       npm root -g
+  #       npm bin -g
+  #       npm install -g @listenai/lisa@beta
+  #       npm install -g yarn
 
-    - name: Make bundle
-      run: |
-        Copy-Item -Path standalone\pwsh -Destination node\bin -Recurse
-        Compress-Archive -Path node\* -DestinationPath lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }}
+  #   - name: Make bundle
+  #     run: |
+  #       Copy-Item -Path standalone\pwsh -Destination node\bin -Recurse
+  #       Compress-Archive -Path node\* -DestinationPath lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }}
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: lisa-standalone-${{ matrix.dist_suffix }}
-        path: lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }}
+  #   - name: Upload artifact
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: lisa-standalone-${{ matrix.dist_suffix }}
+  #       path: lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }}
 
   test-bash:
     needs: bundle-bash
@@ -107,9 +107,9 @@ jobs:
     strategy:
       matrix:
         include:
-        - os: ubuntu-latest
-          format: .tar.xz
-          dist_suffix: linux_x64
+        # - os: ubuntu-latest
+        #   format: .tar.xz
+        #   dist_suffix: linux_x64
         - os: macos-latest
           format: .tar.gz
           dist_suffix: darwin_x64
@@ -134,49 +134,59 @@ jobs:
 
     - name: Test LISA
       run: |
+        export PATH=$HOME/.listenai/lisa/libexec:$PATH
         export PATH=$HOME/.listenai/lisa/bin:$PATH
-        lisa info
-        if [[ -n "$(which node)" ]]; then
-          echo Node Leaks
-          exit 1
-        fi
+        $HOME/.listenai/lisa/bin/node -e "console.log(require('os').platform())"
+        echo $PATH
+        lisa info zephyr
 
-  test-pwsh:
-    needs: bundle-pwsh
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        include:
-        - os: windows-latest
-          format: .zip
-          dist_suffix: win32_x64
-
-    steps:
-    - name: Remove pre-installed Node
-      run: |
-        Get-Command node
-        node -v
-        Remove-Item "C:\Program Files\nodejs" -Recurse
-
-    - name: Download artifact
-      uses: actions/download-artifact@v2
+    - name: Upload to oss
+      id: upload_to_oss
+      uses: tvrcgo/upload-to-oss@master
       with:
-        name: lisa-standalone-${{ matrix.dist_suffix }}
+        key-id: ${{ secrets.OSS_KEY_ID }}
+        key-secret: ${{ secrets.OSS_KEY_SECRET }}
+        region: oss-cn-shanghai
+        bucket: iflyos-external
+        assets: |
+          lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }}:/public/cskTools/lisa-zephyr-${{ matrix.dist_suffix }}${{ matrix.format }}
 
-    - name: Extract LISA
-      run: |
-        New-Item -Path $env:USERPROFILE\.listenai\lisa -ItemType Directory -Force
-        unzip lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }} -d $env:USERPROFILE\.listenai\lisa
+  # test-pwsh:
+  #   needs: bundle-pwsh
+  #   runs-on: ${{ matrix.os }}
 
-    - name: Test LISA (pwsh)
-      shell: pwsh
-      run: |
-        $env:Path = "$env:USERPROFILE\.listenai\lisa\bin;$env:Path"
-        lisa info
+  #   strategy:
+  #     matrix:
+  #       include:
+  #       - os: windows-latest
+  #         format: .zip
+  #         dist_suffix: win32_x64
 
-    - name: Test LISA (cmd)
-      shell: cmd
-      run: |
-        set Path=%USERPROFILE%\.listenai\lisa;%Path%
-        lisa info
+  #   steps:
+  #   - name: Remove pre-installed Node
+  #     run: |
+  #       Get-Command node
+  #       node -v
+  #       Remove-Item "C:\Program Files\nodejs" -Recurse
+
+  #   - name: Download artifact
+  #     uses: actions/download-artifact@v2
+  #     with:
+  #       name: lisa-standalone-${{ matrix.dist_suffix }}
+
+  #   - name: Extract LISA
+  #     run: |
+  #       New-Item -Path $env:USERPROFILE\.listenai\lisa -ItemType Directory -Force
+  #       unzip lisa-standalone-${{ matrix.dist_suffix }}${{ matrix.format }} -d $env:USERPROFILE\.listenai\lisa
+
+  #   - name: Test LISA (pwsh)
+  #     shell: pwsh
+  #     run: |
+  #       $env:Path = "$env:USERPROFILE\.listenai\lisa\bin;$env:Path"
+  #       lisa info
+
+  #   - name: Test LISA (cmd)
+  #     shell: cmd
+  #     run: |
+  #       set Path=%USERPROFILE%\.listenai\lisa;%Path%
+  #       lisa info

@@ -20,7 +20,7 @@ jobs:
           npm config set //registry-lpm.listenai.com/:always-auth true
       - run: npm install
       - run: npm run prepack
-      - run: npm publish --tag=beta --registry=https://registry-lpm.listenai.com
+      # - run: npm publish --tag=beta --registry=https://registry-lpm.listenai.com
       - uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_TOKEN }}

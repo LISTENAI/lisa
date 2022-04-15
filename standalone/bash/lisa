@@ -1,5 +1,5 @@
 #!/bin/bash
 export LISA_PREFIX=$HOME/.listenai/lisa
-export PATH=$LISA_PREFIX/libexec:$PATH
-export npm_config_prefix=$LISA_PREFIX
-exec "$LISA_PREFIX/libexec/node" "$LISA_PREFIX/libexec/lisa" "$@"
+# export PATH=$LISA_PREFIX/libexec:$PATH
+# export npm_config_prefix=$LISA_PREFIX
+exec "$LISA_PREFIX/bin/node" "$LISA_PREFIX/bin/lisa" "$@"
