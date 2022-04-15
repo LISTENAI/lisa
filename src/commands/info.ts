@@ -1,4 +1,4 @@
-import {Command} from '@oclif/command'
+import { Command } from '@oclif/command'
 import lisa from '@listenai/lisa_core'
 import * as os from 'os'
 import * as path from 'path'
@@ -20,25 +20,25 @@ export default class Info extends Command {
   static strict = false
 
   async getVersion(arg: string) {
-    const {cmd} = lisa
-    const {stdout} = await cmd(arg, ['--version'])
+    const { cmd } = lisa
+    const { stdout } = await cmd(arg, ['--version'])
     return stdout
   }
 
   async run() {
-    const {cmd, fs, application} = lisa
-    const {args} = this.parse(Info)
+    const { cmd, fs, application } = lisa
+    const { args } = this.parse(Info)
     const targetPluginName = args?.pluginName
 
     this.log(`\nOperating System - ${(os as any).version()}, version ${os.release()} ${os.arch()} \n`)
     this.log(`@listenai/lisa - ${this.config.version}\n`)
 
     const config = new Configstore('lisa')
-    const lisaUserInfo = config.get('userInfo')
+    const lisaUserInfo = config.get('userInfo') || {}
     let accountInfo
     try {
       const loginInfo = await User.getUserInfo(lisaUserInfo?.accessToken) as any
-      accountInfo = `${loginInfo.data.account}(${loginInfo.data.email})`
+      accountInfo = loginInfo && loginInfo?.data && `${loginInfo?.data?.account}(${loginInfo?.data?.email})`
     } catch (error) {
       accountInfo = '未登录或登录已过期'
     }
@@ -80,7 +80,7 @@ export default class Info extends Command {
               const satisfies = require('semver/functions/satisfies')
               let msg = ''
               try {
-                if (!satisfies(versions[index].match(/(\d\d|\d)(.(\d\d|\d)){1,2}$/g)[0]||'', engines[key])) {
+                if (!satisfies(versions[index].match(/(\d\d|\d)(.(\d\d|\d)){1,2}$/g)[0] || '', engines[key])) {
                   msg = `(error: ${key} need version ${engines[key]})`
                 }
               } catch (error) {

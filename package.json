@@ -1,7 +1,7 @@
 {
   "name": "@listenai/lisa",
   "description": "Lisa 是 Lisa Framework 核心命令行工具，提供模版生成能力以及任务执行命令",
-  "version": "2.4.0-beta.4",
+  "version": "2.4.0-beta.5",
   "author": "geekBoom.Zhao <zbzhao@listenai.com>",
   "bin": {
     "lisa": "./bin/run"
@@ -62,8 +62,7 @@
     "plugins": [],
     "hooks": {
       "init": [
-        "./lib/hooks/init/load",
-        "./lib/hooks/init/oauth"
+        "./lib/hooks/init/load"
       ],
       "command_not_found": [
         "./lib/hooks/command_not_found/run-task",
