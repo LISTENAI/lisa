@@ -52,7 +52,7 @@ lisa_do_install() {
   INSTALL_DIR="$(lisa_default_install_dir)"
 
   local LISA_SOURCE
-  LISA_SOURCE="https://castor.iflyos.cn/castor/v3/lisaPluginZephyr/download?platform=macOS"
+  LISA_SOURCE="https://cdn.iflyos.cn/public/cskTools/lisa-zephyr-darwin_x64.tar.gz"
 
   local LISA_BIN
   LISA_BIN="${INSTALL_DIR}/libexec"
