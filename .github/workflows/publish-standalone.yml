@@ -15,10 +15,10 @@ jobs:
     strategy:
       matrix:
         include:
-        # - os: ubuntu-latest
-        #   format: .tar.xz
-        #   node_suffix: linux-x64
-        #   dist_suffix: linux_x64
+        - os: ubuntu-latest
+          format: .tar.xz
+          node_suffix: linux-x64
+          dist_suffix: linux_x64
         - os: macos-latest
           format: .tar.gz
           node_suffix: darwin-x64
@@ -107,9 +107,9 @@ jobs:
     strategy:
       matrix:
         include:
-        # - os: ubuntu-latest
-        #   format: .tar.xz
-        #   dist_suffix: linux_x64
+        - os: ubuntu-latest
+          format: .tar.xz
+          dist_suffix: linux_x64
         - os: macos-latest
           format: .tar.gz
           dist_suffix: darwin_x64
