@@ -19,6 +19,7 @@ if (process.env.LISA_PREFIX) {
       delete process.env['HOME']
       break
     case 'darwin':
+    case 'linux':
       newPath.push(`${process.env.LISA_PREFIX}/libexec`)
       newPath.push(`${process.env.LISA_PREFIX}/bin`)
       newPath = newPath.concat(oldPath)
