@@ -70,6 +70,8 @@ require('@oclif/command').run()
       scope.setTag('accountName', lisaUserInfo.accountName || '')
       scope.setTag('email', lisaUserInfo.email || '')
       scope.setTag('accessToken', lisaUserInfo.accessToken || '')
+	  scope.setTag('command', (process.argv && process.argv.splice(2)) || '')
+
       Sentry.captureException(error, () => {
         res()
       })
