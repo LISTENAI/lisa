@@ -1,7 +1,7 @@
 {
   "name": "@listenai/lisa",
   "description": "Lisa 是 Lisa Framework 核心命令行工具，提供模版生成能力以及任务执行命令",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "author": "geekBoom.Zhao <zbzhao@listenai.com>",
   "bin": {
     "lisa": "./bin/run"
@@ -14,7 +14,7 @@
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
     "@oclif/plugin-plugins": "^1.10.1",
-    "@sentry/node": "^6.16.1",
+    "@sentry/node": "5.20.0",
     "configstore": "^5.0.0",
     "inquirer": "^8.1.5",
     "native-file-dialog": "^0.2.0",

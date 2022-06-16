@@ -7,6 +7,14 @@ if (process && process.argv.indexOf('--debug') >= 0) {
 }
 const command_1 = require("@oclif/command");
 const os_1 = require("os");
+function findPathKey() {
+    for (const key in process.env) {
+        if (key.toLowerCase() === 'path') {
+            return key;
+        }
+    }
+    return 'PATH';
+}
 if (process.env.LISA_PREFIX) {
     const oldPath = process.env[findPathKey()];
     let newPath = [];
@@ -18,23 +26,16 @@ if (process.env.LISA_PREFIX) {
             });
             newPath.push(process.env.LISA_PREFIX);
             process.env[findPathKey()] = `${newPath.join(';')}`;
-            delete process.env['HOME'];
+            delete process.env.HOME;
             break;
         case 'darwin':
+        case 'linux':
             newPath.push(`${process.env.LISA_PREFIX}/libexec`);
             newPath.push(`${process.env.LISA_PREFIX}/bin`);
             newPath = newPath.concat(oldPath);
             process.env[findPathKey()] = `${newPath.join(':')}`;
             break;
     }
-}
-function findPathKey() {
-    for (const key in process.env) {
-        if (key.toLowerCase() == 'path') {
-            return key;
-        }
-    }
-    return 'PATH';
 }
 const Sentry = require('@sentry/node');
 Sentry.init({
@@ -51,25 +52,23 @@ BeforeRunCommand.run();
 require('@oclif/command').run()
     .then(require('@oclif/command/flush'))
     .catch(async (error) => {
+    // eslint-disable-next-line node/no-extraneous-require
     const oclifHandler = require('@oclif/errors/handle');
     // do any extra work with error
     const Configstore = require('configstore');
     const config = new Configstore('lisa');
     const lisaUserInfo = config.get('userInfo') || {};
-    await new Promise((res, _rej) => {
-        Sentry.withScope(function (scope) {
-            scope.setTag('lisaVersion', config.get('version') || '');
-            scope.setTag('userid', lisaUserInfo.id || '');
-            scope.setTag('username', lisaUserInfo.username || '');
-            scope.setTag('accountName', lisaUserInfo.accountName || '');
-            scope.setTag('email', lisaUserInfo.email || '');
-            scope.setTag('accessToken', lisaUserInfo.accessToken || '');
-            scope.setTag('command', (process.argv && process.argv.splice(2)) || '');
-            Sentry.captureException(error, () => {
-                res();
-            });
-        });
+    await Sentry.withScope(function (scope) {
+        scope.setTag("lisaVersion", config.get("version") || "");
+        scope.setTag("userid", lisaUserInfo.id || "");
+        scope.setTag("username", lisaUserInfo.username || "");
+        scope.setTag("accountName", lisaUserInfo.accountName || "");
+        scope.setTag("email", lisaUserInfo.email || "");
+        scope.setTag("accessToken", lisaUserInfo.accessToken || "");
+        scope.setTag("command", (process.argv && process.argv.splice(2)) || "");
+        Sentry.captureException(error);
     });
+    await Sentry.close(2000);
     return oclifHandler(error);
 });
 //# sourceMappingURL=run.js.map
