@@ -52,6 +52,12 @@ class BeforeRunCommand extends Command {
 }
 BeforeRunCommand.run()
 
+let command = ''
+try {
+  command = `lisa ${process.argv.filter((_val, index) => index >= 2).join(' ')}`
+} catch (error) {
+}
+
 require('@oclif/command').run()
 .then(require('@oclif/command/flush'))
 .catch(async error => {
@@ -69,7 +75,7 @@ require('@oclif/command').run()
     scope.setTag('accountName', lisaUserInfo.accountName || '')
     scope.setTag('email', lisaUserInfo.email || '')
     scope.setTag('accessToken', lisaUserInfo.accessToken || '')
-    scope.setTag('command', (process.argv && process.argv.splice(2)) || '')
+    scope.setTag('command', command)
     Sentry.captureException(error)
   })
   await Sentry.close(2000)
