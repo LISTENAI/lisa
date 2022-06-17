@@ -62,20 +62,16 @@ require('@oclif/command').run()
   const config = new Configstore('lisa')
   const lisaUserInfo = config.get('userInfo') || {}
 
-  await new Promise<void>((res, _rej) => {
-    Sentry.withScope(function (scope) {
-      scope.setTag('lisaVersion', config.get('version') || '')
-      scope.setTag('userid', lisaUserInfo.id || '')
-      scope.setTag('username', lisaUserInfo.username || '')
-      scope.setTag('accountName', lisaUserInfo.accountName || '')
-      scope.setTag('email', lisaUserInfo.email || '')
-      scope.setTag('accessToken', lisaUserInfo.accessToken || '')
-	  scope.setTag('command', (process.argv && process.argv.splice(2)) || '')
-
-      Sentry.captureException(error, () => {
-        res()
-      })
-    })
-  })
+ await Sentry.withScope(function (scope) {
+      scope.setTag("lisaVersion", config.get("version") || "");
+      scope.setTag("userid", lisaUserInfo.id || "");
+      scope.setTag("username", lisaUserInfo.username || "");
+      scope.setTag("accountName", lisaUserInfo.accountName || "");
+      scope.setTag("email", lisaUserInfo.email || "");
+      scope.setTag("accessToken", lisaUserInfo.accessToken || "");
+      scope.setTag("command", (process.argv && process.argv.splice(2)) || "");
+      Sentry.captureException(error);
+    });
+ await Sentry.close(2000);
   return oclifHandler(error)
 })
