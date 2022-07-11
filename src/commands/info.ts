@@ -25,8 +25,8 @@ export default class Info extends Command {
     return stdout
   }
 
-  async run() {
-    const { cmd, fs, application } = lisa
+  async getplugin() {
+     const { cmd, fs, application } = lisa
     const { args } = this.parse(Info)
     const targetPluginName = args?.pluginName
 
@@ -60,7 +60,6 @@ export default class Info extends Command {
       } catch (error) {
         this.debug(error)
       }
-
       const pluginRoot = path.resolve(path.join(globalRoot, '@lisa-plugin', targetPluginName))
       if (fs.existsSync(path.join(pluginRoot, 'package.json'))) {
         // engines 获取global依赖环境
@@ -117,5 +116,30 @@ export default class Info extends Command {
         }
       }
     }
+  }
+
+  async run() {
+    const that = this
+    try {
+      Promise.race([
+        new Promise<void>(async (resolve, _) => {
+          await that.getplugin()
+          resolve()
+        }),
+        new Promise((_, reject) => {
+          setTimeout(function () {
+            reject()
+            throw new Error('The operation has timed out')
+          }, 5000)
+        }),
+      ]).then(() => {
+        process.exit();
+      }).catch(error => {
+        this.log(error || 'some error occurred')
+      })
+      } catch (error) {
+        this.error(error)
+      }
+   
   }
 }
