@@ -5,6 +5,7 @@ import * as path from 'path'
 import lpmPkgVersion from '../util/lpmPkgVersion'
 import User from '../util/user'
 import * as Configstore from 'configstore'
+import compare from '../util/compare'
 
 export default class Info extends Command {
   static description = '查看环境信息'
@@ -18,18 +19,28 @@ export default class Info extends Command {
   ]
 
   static strict = false
+  //检查zephyr更新
 
+  async checkZephyrUpdate(currentVersion: string, latestVersion: string) {
+    const { cli, cmd } = lisa
+    if (compare(currentVersion, latestVersion) < 0) {
+      const isUpdate: boolean = await cli.confirm(`发现zephyr有可更新的版本: ${latestVersion}，是否需要更新(Y/N )?`)
+      if (isUpdate) {
+        await cmd('lisa', ['zep', 'update'], { stdio: 'inherit' })
+      }
+    }
+
+  }
   async getVersion(arg: string) {
     const { cmd } = lisa
     const { stdout } = await cmd(arg, ['--version'])
     return stdout
   }
 
-  async run() {
-    const { cmd, fs, application } = lisa
+  async getplugin() {
+    const { cmd, fs } = lisa
     const { args } = this.parse(Info)
-    const targetPluginName = args?.pluginName
-
+    let targetPluginName = args?.pluginName
     this.log(`\nOperating System - ${(os as any).version()}, version ${os.release()} ${os.arch()} \n`)
     this.log(`@listenai/lisa - ${this.config.version}\n`)
 
@@ -60,8 +71,10 @@ export default class Info extends Command {
       } catch (error) {
         this.debug(error)
       }
-
-      const pluginRoot = path.resolve(path.join(globalRoot, '@lisa-plugin', targetPluginName))
+      let pluginRoot;
+      //支持zephyr的别名（zep）
+      targetPluginName = targetPluginName === 'zep' ? 'zephyr' : targetPluginName
+      pluginRoot = path.resolve(path.join(globalRoot, '@lisa-plugin', targetPluginName))
       if (fs.existsSync(path.join(pluginRoot, 'package.json'))) {
         // engines 获取global依赖环境
         const pluginPackage = await fs.readJSON(path.join(pluginRoot, 'package.json')) || {}
@@ -115,7 +128,36 @@ export default class Info extends Command {
             )
           }
         }
+        //zephyr 检查更新
+        if (targetPluginName === 'zephyr') {
+          await this.checkZephyrUpdate(pluginVersion, pluginLatestVersion)
+        }
       }
     }
   }
+
+  async run() {
+    const that = this
+    try {
+      Promise.race([
+        new Promise<void>(async (resolve, _) => {
+          await that.getplugin()
+          resolve()
+        })
+        // new Promise((_, reject) => {
+        //   setTimeout(function () {
+        //     reject()
+        //     throw new Error('The operation has timed out')
+        //   }, 8000)
+        // }),
+      ]).then(() => {
+        process.exit();
+      }).catch(error => {
+        this.log(error || 'some error occurred')
+      })
+    } catch (error) {
+      this.error(error)
+    }
+  }
+
 }
