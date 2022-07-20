@@ -24,6 +24,11 @@ async function getLatestVersion() {
 }
 
 const checkUpdate = async function () {
+  const args = process.argv.filter((_val, index) => index >= 2)
+  const isZepCommand = args && args[0] && args[0].includes('zep')
+  if (isZepCommand) {
+    return
+  }
   const config = new Configstore('lisa')
   const versionCheckInfo = config.get('versionCheckInfo')
   this.debug(versionCheckInfo)

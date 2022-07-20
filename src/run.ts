@@ -39,13 +39,19 @@ if (process.env.LISA_PREFIX) {
 }
 
 const Sentry = require('@sentry/node')
+let event_id;
 Sentry.init({
   dsn: 'http://043e699dd29e4c6fb1de231a729f8aa4@sentry.iflyos.cn/95',
   tracesSampleRate: 1.0,
+  beforeSend(event, _hint) {
+    event_id = event.event_id;
+    return event;
+  }
 })
 
 class BeforeRunCommand extends Command {
   async run() {
+   
     this.config.runHook('checkUpdate', {})
     this.config.runHook('event', {})
   }
@@ -67,7 +73,6 @@ require('@oclif/command').run()
   const Configstore = require('configstore')
   const config = new Configstore('lisa')
   const lisaUserInfo = config.get('userInfo') || {}
-
   await Sentry.withScope(function (scope) {
     scope.setTag('lisaVersion', config.get('version') || '')
     scope.setTag('userid', lisaUserInfo.id || '')
@@ -79,5 +84,7 @@ require('@oclif/command').run()
     Sentry.captureException(error)
   })
   await Sentry.close(2000)
+  // console.log(`Event ID:${event_id}`)
+
   return oclifHandler(error)
 })
