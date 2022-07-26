@@ -1,5 +1,6 @@
 import lisa from '@listenai/lisa_core';
 import { join, resolve } from 'path';
+import { CompletionItem, TabtabEnv } from 'tabtab';
 
 const SCOPE_NAME = '@lisa-plugin';
 
@@ -22,6 +23,7 @@ export interface IPluginPackageInfo {
 
 export interface IPluginMain {
   env?: () => Promise<Record<string, string>>;
+  completion?: (env: TabtabEnv) => Promise<CompletionItem[] | string[] | undefined>;
 }
 
 export async function listPlugins(): Promise<IPluginInfo[]> {
