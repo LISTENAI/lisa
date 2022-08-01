@@ -6,7 +6,7 @@ import lpmPkgVersion from '../util/lpmPkgVersion'
 import User from '../util/user'
 import * as Configstore from 'configstore'
 import compare from '../util/compare'
-import { getPlugin, IPluginMain } from '../util/plugins'
+import { getPlugin, getPluginByFriendlyName, IPluginMain } from '../util/plugins'
 
 export default class Info extends Command {
   static description = '查看环境信息'
@@ -63,9 +63,7 @@ export default class Info extends Command {
     )
 
     if (targetPluginName) {
-      //支持zephyr的别名（zep）
-      targetPluginName = targetPluginName === 'zep' ? 'zephyr' : targetPluginName
-      const plugin = await getPlugin(targetPluginName)
+      const plugin = await getPlugin(targetPluginName) || await getPluginByFriendlyName(targetPluginName)
       if (plugin) {
         const engines = plugin.package.engines
         if (engines) {

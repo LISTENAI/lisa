@@ -81,6 +81,28 @@ export async function getPlugin(id: string): Promise<IPluginInfo | undefined> {
   }
 }
 
+export async function getPluginByFriendlyName(friendlyName: string): Promise<IPluginInfo | undefined> {
+  const aliasRoot = join(CACHE_DIR, 'plugin-aliases');
+  lisa.application.debug(`getPluginByFriendlyName(${friendlyName}) start`);
+
+  const pluginInfo = await loadPluginInfo(join(aliasRoot, friendlyName));
+  if (pluginInfo) {
+    lisa.application.debug(`getPluginByFriendlyName(${friendlyName}) done, resolved with friendlyName`);
+    return pluginInfo;
+  }
+
+  for (const plugin of await listPlugins()) {
+    if (plugin.friendlyName == friendlyName) {
+      await lisa.fs.ensureSymlink(plugin.root, join(aliasRoot, plugin.friendlyName));
+      lisa.application.debug(`getPluginByFriendlyName(${friendlyName}) done, resolved with friendlyName, cached`);
+      return plugin;
+    }
+  }
+
+  lisa.application.debug(`getPluginByFriendlyName(${friendlyName}) done, not found`);
+  return undefined;
+}
+
 async function getNpmRoot(): Promise<string> {
   lisa.application.debug('getNpmRoot start');
   const symlink = join(CACHE_DIR, 'npm-root');
