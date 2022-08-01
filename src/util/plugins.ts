@@ -18,12 +18,16 @@ export interface IPluginPackageInfo {
   main?: string;
   lisa?: {
     friendlyName?: string;
+    completion?: string;
   };
 }
 
 export interface IPluginMain {
   env?: () => Promise<Record<string, string>>;
-  completion?: (env: TabtabEnv) => Promise<CompletionItem[] | string[] | undefined>;
+}
+
+export interface IPluginCompletion {
+  (env: TabtabEnv): Promise<CompletionItem[] | string[] | undefined>;
 }
 
 export async function listPlugins(): Promise<IPluginInfo[]> {

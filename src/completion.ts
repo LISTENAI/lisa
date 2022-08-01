@@ -2,7 +2,7 @@
 import lisa from '@listenai/lisa_core';
 import { join } from 'path';
 import * as tabtab from 'tabtab';
-import { IPluginInfo, IPluginMain, listPlugins } from './util/plugins';
+import { IPluginCompletion, IPluginInfo, listPlugins } from './util/plugins';
 
 (async () => {
   const env = tabtab.parseEnv(process.env);
@@ -22,12 +22,13 @@ import { IPluginInfo, IPluginMain, listPlugins } from './util/plugins';
   }
 
   const match = env.line.match(/^lisa (\S+) /);
-  if (match && plugins[match[1]] && plugins[match[1]].package.main) {
+  if (match && plugins[match[1]] && plugins[match[1]].package.lisa?.completion) {
     const plugin = plugins[match[1]];
-    const mainPath = join(plugin.root, plugin.package.main);
-    if (await lisa.fs.pathExists(mainPath)) {
-      const main: IPluginMain = await import(mainPath);
-      const completion = typeof main.completion == 'function' && await main.completion(env);
+    const completionScript = join(plugin.root, plugin.package.lisa.completion);
+    if (await lisa.fs.pathExists(completionScript)) {
+      const completionModule = await import(completionScript);
+      const completionFn = completionModule.default as IPluginCompletion;
+      const completion = typeof completionFn == 'function' && await completionFn(env);
       if (completion) {
         return tabtab.log(completion);
       }
