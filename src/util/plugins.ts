@@ -2,6 +2,8 @@ import lisa from '@listenai/lisa_core';
 import { join, resolve } from 'path';
 import { CompletionItem, TabtabEnv } from 'tabtab';
 
+const CACHE_DIR = resolve(__dirname, '..', '..', 'var');
+
 const SCOPE_NAME = '@lisa-plugin';
 
 export interface IPluginInfo {
@@ -70,7 +72,23 @@ export async function getPlugin(id: string): Promise<IPluginInfo | undefined> {
   }
 }
 
+async function getNpmRoot(): Promise<string> {
+  lisa.application.debug('getNpmRoot start');
+  const symlink = join(CACHE_DIR, 'npm-root');
+  if (!(await lisa.fs.pathExists(symlink))) {
+    lisa.application.debug('getNpmRoot not cahched, resolving...');
+    const { stdout: npmRoot } = await lisa.cmd('npm', ['root', '-g']);
+    await lisa.fs.ensureSymlink(npmRoot, symlink);
+    lisa.application.debug('getNpmRoot resolved and cached');
+  }
+  lisa.application.debug(`getNpmRoot done: ${symlink}`);
+  return symlink;
+}
+
 async function getPluginsRoot(): Promise<string> {
-  const { stdout: npmRoot } = await lisa.cmd('npm', ['root', '-g']);
-  return resolve(npmRoot, SCOPE_NAME);
+  lisa.application.debug('getPluginsRoot start');
+  const npmRoot = await getNpmRoot();
+  const pluginsRoot = resolve(npmRoot, SCOPE_NAME);
+  lisa.application.debug(`getPluginsRoot done: ${pluginsRoot}`);
+  return pluginsRoot;
 }
