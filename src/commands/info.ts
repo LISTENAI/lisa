@@ -6,6 +6,7 @@ import lpmPkgVersion from '../util/lpmPkgVersion'
 import User from '../util/user'
 import * as Configstore from 'configstore'
 import compare from '../util/compare'
+import { getPlugin, getPluginByFriendlyName, IPluginMain } from '../util/plugins'
 
 export default class Info extends Command {
   static description = '查看环境信息'
@@ -38,7 +39,7 @@ export default class Info extends Command {
   }
 
   async getplugin() {
-    const { cmd, fs } = lisa
+    const { fs } = lisa
     const { args } = this.parse(Info)
     let targetPluginName = args?.pluginName
     this.log(`\nOperating System - ${(os as any).version()}, version ${os.release()} ${os.arch()} \n`)
@@ -62,23 +63,9 @@ export default class Info extends Command {
     )
 
     if (targetPluginName) {
-      let globalRoot = ''
-      try {
-        const result = await Promise.all([
-          await cmd('npm', 'root -g'.split(' ')),
-        ])
-        globalRoot = result[0].stdout
-      } catch (error) {
-        this.debug(error)
-      }
-      let pluginRoot;
-      //支持zephyr的别名（zep）
-      targetPluginName = targetPluginName === 'zep' ? 'zephyr' : targetPluginName
-      pluginRoot = path.resolve(path.join(globalRoot, '@lisa-plugin', targetPluginName))
-      if (fs.existsSync(path.join(pluginRoot, 'package.json'))) {
-        // engines 获取global依赖环境
-        const pluginPackage = await fs.readJSON(path.join(pluginRoot, 'package.json')) || {}
-        const engines = pluginPackage?.engines
+      const plugin = await getPlugin(targetPluginName) || await getPluginByFriendlyName(targetPluginName)
+      if (plugin) {
+        const engines = plugin.package.engines
         if (engines) {
           const items = Object.keys(engines).filter(item => !['node', 'npm'].includes(item))
           if (items.length > 0) {
@@ -107,27 +94,30 @@ export default class Info extends Command {
 
         // 展示plugin版本
         const pluginLatestVersion = await lpmPkgVersion(`@lisa-plugin/${targetPluginName}`)
-        const pluginVersion = pluginPackage?.version || ''
+        const pluginVersion = plugin.package.version || ''
         this.log(
           'Plugin info \n' +
           `  ${targetPluginName} - ${pluginVersion} (latest: ${pluginLatestVersion})\n`
         )
 
-        if (pluginPackage?.version) {
+        if (plugin.package.main) {
           // main入口获取沙箱env环境
-          const mainPath = fs.readJSONSync(path.join(pluginRoot, 'package.json'))?.main
-          const main = require(path.join(pluginRoot, mainPath))
-          if (main.env) {
-            const pluginEnv = await main.env()
-            this.log(
-              'Plugin environment \n' +
-              Object.keys(pluginEnv).map(key => {
-                return `  ${key} - ${pluginEnv[key]}`
-              }).join('\n') +
-              '\n'
-            )
+          const mainPath = path.join(plugin.root, plugin.package.main)
+          if (await fs.pathExists(mainPath)) {
+            const main: IPluginMain = await import(mainPath)
+            if (typeof main.env == 'function') {
+              const pluginEnv = await main.env()
+              this.log(
+                'Plugin environment \n' +
+                Object.keys(pluginEnv).map(key => {
+                  return `  ${key} - ${pluginEnv[key]}`
+                }).join('\n') +
+                '\n'
+              )
+            }
           }
         }
+
         //zephyr 检查更新
         if (targetPluginName === 'zephyr') {
           await this.checkZephyrUpdate(pluginVersion, pluginLatestVersion)
