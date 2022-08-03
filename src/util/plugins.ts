@@ -130,7 +130,10 @@ async function getPluginsRoot(): Promise<string> {
 
 async function readLink(link: string): Promise<string | undefined> {
   if (await lisa.fs.pathExists(link)) {
-    return (await lisa.fs.readFile(link, 'utf-8')).trim();
+    const target = (await lisa.fs.readFile(link, 'utf-8')).trim();
+    if (await lisa.fs.pathExists(target)) {
+      return target;
+    }
   }
 }
 
