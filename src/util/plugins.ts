@@ -85,35 +85,39 @@ export async function getPluginByFriendlyName(friendlyName: string): Promise<IPl
   const aliasRoot = join(CACHE_DIR, 'plugin-aliases');
   lisa.application.debug(`getPluginByFriendlyName(${friendlyName}) start`);
 
-  const pluginInfo = await loadPluginInfo(join(aliasRoot, friendlyName));
-  if (pluginInfo) {
-    lisa.application.debug(`getPluginByFriendlyName(${friendlyName}) done, resolved with friendlyName`);
-    return pluginInfo;
-  }
-
-  for (const plugin of await listPlugins()) {
-    if (plugin.friendlyName == friendlyName) {
-      await lisa.fs.ensureSymlink(plugin.root, join(aliasRoot, plugin.friendlyName));
-      lisa.application.debug(`getPluginByFriendlyName(${friendlyName}) done, resolved with friendlyName, cached`);
-      return plugin;
+  const pluginRoot = await readLinkOrCreate(join(aliasRoot, `${friendlyName}.link`), async () => {
+    for (const plugin of await listPlugins()) {
+      if (plugin.friendlyName == friendlyName) {
+        lisa.application.debug(`getPluginByFriendlyName(${friendlyName}) resolved`);
+        return plugin.root;
+      }
     }
+  });
+  if (!pluginRoot) {
+    lisa.application.debug(`getPluginByFriendlyName(${friendlyName}) done, not found`);
+    return undefined;
   }
 
-  lisa.application.debug(`getPluginByFriendlyName(${friendlyName}) done, not found`);
-  return undefined;
+  const pluginInfo = await loadPluginInfo(pluginRoot);
+  if (!pluginInfo) {
+    lisa.application.debug(`getPluginByFriendlyName(${friendlyName}) done, not load`);
+    return undefined;
+  }
+
+  lisa.application.debug(`getPluginByFriendlyName(${friendlyName}) done`);
+  return pluginInfo;
 }
 
 async function getNpmRoot(): Promise<string> {
   lisa.application.debug('getNpmRoot start');
-  const symlink = join(CACHE_DIR, 'npm-root');
-  if (!(await lisa.fs.pathExists(symlink))) {
-    lisa.application.debug('getNpmRoot not cahched, resolving...');
-    const { stdout: npmRoot } = await lisa.cmd('npm', ['root', '-g']);
-    await lisa.fs.ensureSymlink(npmRoot, symlink);
-    lisa.application.debug('getNpmRoot resolved and cached');
-  }
-  lisa.application.debug(`getNpmRoot done: ${symlink}`);
-  return symlink;
+  const npmRoot = await readLinkOrCreate(join(CACHE_DIR, 'npm-root.link'), async () => {
+    lisa.application.debug('getNpmRoot not cached, resolving...');
+    const { stdout } = await lisa.cmd('npm', ['root', '-g']);
+    lisa.application.debug('getNpmRoot resolved');
+    return stdout;
+  });
+  lisa.application.debug(`getNpmRoot done: ${npmRoot}`);
+  return npmRoot;
 }
 
 async function getPluginsRoot(): Promise<string> {
@@ -122,4 +126,26 @@ async function getPluginsRoot(): Promise<string> {
   const pluginsRoot = resolve(npmRoot, SCOPE_NAME);
   lisa.application.debug(`getPluginsRoot done: ${pluginsRoot}`);
   return pluginsRoot;
+}
+
+async function readLink(link: string): Promise<string | undefined> {
+  if (await lisa.fs.pathExists(link)) {
+    return (await lisa.fs.readFile(link, 'utf-8')).trim();
+  }
+}
+
+async function ensureLink(link: string, to: string): Promise<void> {
+  await lisa.fs.outputFile(link, to);
+}
+
+async function readLinkOrCreate(link: string, creator: () => Promise<string | undefined>): Promise<string | undefined> {
+  const cached = await readLink(link);
+  if (cached) {
+    return cached;
+  }
+  const target = await creator();
+  if (target) {
+    await ensureLink(link, target);
+  }
+  return target;
 }
