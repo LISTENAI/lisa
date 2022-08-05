@@ -93,7 +93,7 @@ export default class Info extends Command {
         }
 
         // 展示plugin版本
-        const pluginLatestVersion = await lpmPkgVersion(`@lisa-plugin/${targetPluginName}`)
+        const pluginLatestVersion = await lpmPkgVersion(plugin.name)
         const pluginVersion = plugin.package.version || ''
         this.log(
           'Plugin info \n' +
@@ -119,7 +119,7 @@ export default class Info extends Command {
         }
 
         //zephyr 检查更新
-        if (targetPluginName === 'zephyr') {
+        if (plugin.name === '@lisa-plugin/zephyr') {
           await this.checkZephyrUpdate(pluginVersion, pluginLatestVersion)
         }
       }
