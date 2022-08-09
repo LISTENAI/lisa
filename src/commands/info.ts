@@ -27,7 +27,7 @@ export default class Info extends Command {
     if (compare(currentVersion, latestVersion) < 0) {
       const isUpdate: boolean = await cli.confirm(`发现zephyr有可更新的版本: ${latestVersion}，是否需要更新(Y/N )?`)
       if (isUpdate) {
-        await cmd('lisa', ['zep', 'update'], { stdio: 'inherit' })
+        await cmd('lisa', ['update', 'zephyr'], { stdio: 'inherit' })
       }
     }
 
