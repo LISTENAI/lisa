@@ -17,7 +17,7 @@ export default class Update extends Command {
   ]
 
   async run() {
-    const {cli, cmd, application, got} = lisa
+    const {cli, cmd, application} = lisa
     cli.action.start('更新启动...')
     const DEBUG = process.env.LISA_ENV === 'debug'
     const {args} = this.parse(Update)
@@ -57,25 +57,8 @@ export default class Update extends Command {
       //check for express package
       this.debug('Checking for express update package...')
       const isBeta: Number = channel === 'beta' ? 1 : 0;
-      const requestUrl = `${Update.CASTOR_URL_PREFIX}/lisaPlugin/version?name=${wantUpdatePkg}&version=${channelLatestVersion}&isBeta=${isBeta}`;
-      try {
-        const {body}: {body: any} = await got(requestUrl, {
-          responseType: "json",
-          timeout: 5000
-        });
-        return cli.action.stop(`code = ${body.recode}, baseVersion = ${body.data.expressBaseVersion}, url = ${body.data.expressPackageUrl}`)
-      } catch (gotError) {
-        switch (gotError.code) {
-          case 'ERR_NON_2XX_3XX_RESPONSE':
-            const respBody = gotError.response.body;
-            return cli.action.stop(`code = ${respBody.recode}, msg = ${respBody.desc}`);
-            break;
-          default:
-            throw gotError;
-            break;
-        }
-
-      }
+      const expressUpdateResult = await this.getExpressUpdatePackageInfo(wantUpdatePkg, channelLatestVersion, isBeta);
+      return cli.action.stop(JSON.stringify(expressUpdateResult));
     } catch (error) {
       throw error
     }
@@ -92,6 +75,30 @@ export default class Update extends Command {
     const result = JSON.parse(resultRaw);
 
     return result['dependencies'][pluginName]['version'] ?? '-.-.-';
+  }
+
+  async getExpressUpdatePackageInfo(name: string, expectedVersion: string, isBeta: Number) {
+    const {cli, got} = lisa
+    let result: any = {};
+
+    const requestUrl = `${Update.CASTOR_URL_PREFIX}/lisaPlugin/version?name=${name}&version=${expectedVersion}&isBeta=${isBeta}`;
+    try {
+      const {body}: {body: any} = await got(requestUrl, {
+        responseType: "json",
+        timeout: 5000
+      });
+      result = body;
+    } catch (gotError) {
+      switch (gotError.code) {
+        case 'ERR_NON_2XX_3XX_RESPONSE':
+          result = gotError.response.body;
+          break;
+        default:
+          throw gotError;
+      }
+    } finally {
+      return result
+    }
   }
 
   /*async run() {
