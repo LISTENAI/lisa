@@ -6,6 +6,8 @@ import lpminit from '../util/lpminit'
 export default class Update extends Command {
   static description = '更新lisa到最新版本'
 
+  static CASTOR_URL_PREFIX = 'https://staging-castor.iflyos.cn/castor/v3'
+
   static args = [
     {
       name: 'plugin',
@@ -15,6 +17,84 @@ export default class Update extends Command {
   ]
 
   async run() {
+    const {cli, cmd, application, got} = lisa
+    cli.action.start('更新启动...')
+    const DEBUG = process.env.LISA_ENV === 'debug'
+    const {args} = this.parse(Update)
+
+    let wantUpdatePkg = '@listenai/lisa'
+    let registry = ''
+    let command = []
+    let channel = 'latest'
+    if (args.plugin) {
+      wantUpdatePkg = `@lisa-plugin/${args.plugin}`
+      await lpminit()
+      registry = `--registry=${application.registryUrl}`
+    }
+    if (DEBUG) {
+      channel = 'beta'
+    }
+
+    const currentVersion = await this.getPluginVersion(wantUpdatePkg);
+    if (currentVersion === '-.-.-') {
+      throw new Error('此插件并未安装!')
+    }
+    this.debug('当前版本 %s', currentVersion)
+
+    try {
+      command = ['view', wantUpdatePkg, 'dist-tags']
+      const res = await cmd('npm', registry ? command.concat(registry) : command)
+      const distTags = JSON.parse(res.stdout.replace(/(\s*?{\s*?|\s*?,\s*?)(['"])?([a-zA-Z0-9]+)(['"])?:/g, '$1"$3":').replace(/'/g, '"'))
+      //const channelLatestVersion: string = channel === 'beta' ? distTags.beta : distTags.latest;
+      const channelLatestVersion: string = '1.6.9';
+      this.debug('最新版本: %s, 通道: %s', channelLatestVersion, channel)
+
+      //check if current version
+      if (compare(currentVersion, channelLatestVersion) >= 0) {
+        return cli.action.stop(`已是最新版本 ${currentVersion}`)
+      }
+
+      //check for express package
+      this.debug('Checking for express update package...')
+      const isBeta: Number = channel === 'beta' ? 1 : 0;
+      const requestUrl = `${Update.CASTOR_URL_PREFIX}/lisaPlugin/version?name=${wantUpdatePkg}&version=${channelLatestVersion}&isBeta=${isBeta}`;
+      try {
+        const {body}: {body: any} = await got(requestUrl, {
+          responseType: "json",
+          timeout: 5000
+        });
+        return cli.action.stop(`code = ${body.recode}, baseVersion = ${body.data.expressBaseVersion}, url = ${body.data.expressPackageUrl}`)
+      } catch (gotError) {
+        switch (gotError.code) {
+          case 'ERR_NON_2XX_3XX_RESPONSE':
+            const respBody = gotError.response.body;
+            return cli.action.stop(`code = ${respBody.recode}, msg = ${respBody.desc}`);
+            break;
+          default:
+            throw gotError;
+            break;
+        }
+
+      }
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async getPluginVersion(pluginName: string) {
+    if (pluginName === '@listenai/lisa') {
+      return this.config.version
+    }
+
+    const {cmd} = lisa
+    const query = [ 'ls', pluginName, '--json' ];
+    const resultRaw = (await cmd('npm', query)).stdout;
+    const result = JSON.parse(resultRaw);
+
+    return result['dependencies'][pluginName]['version'] ?? '-.-.-';
+  }
+
+  /*async run() {
     const {cli, cmd, application} = lisa
     cli.action.start('更新启动...')
     const DEBUG = process.env.LISA_ENV === 'debug'
@@ -65,5 +145,5 @@ export default class Update extends Command {
     } catch (error) {
       throw error
     }
-  }
+  }*/
 }
