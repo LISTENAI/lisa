@@ -3,7 +3,7 @@ import lisa from '@listenai/lisa_core'
 import compare from '../util/compare'
 import lpminit from '../util/lpminit'
 import download from '@xingrz/download2';
-import {resolve} from "path";
+import {getPlugin, getPluginByFriendlyName} from '../util/plugins'
 
 export default class Update extends Command {
   static description = '更新lisa到最新版本'
@@ -37,9 +37,17 @@ export default class Update extends Command {
       channel = 'beta'
     }
 
-    const currentVersion = await this.getPluginVersion(wantUpdatePkg);
+    //check if this is friendly name
+    let thisPlugin = await getPlugin(args.plugin);
+    let currentVersion = thisPlugin !== undefined ? thisPlugin.version : '-.-.-';
     if (currentVersion === '-.-.-') {
-      throw new Error('此插件并未安装!')
+      thisPlugin = await getPluginByFriendlyName(args.plugin);
+      if (thisPlugin === undefined) {
+        throw new Error('此插件并未安装!')
+      } else {
+        wantUpdatePkg = thisPlugin.name;
+        currentVersion = thisPlugin.version;
+      }
     }
     this.debug('当前版本 %s', currentVersion)
 
@@ -78,8 +86,7 @@ export default class Update extends Command {
         //if eup is available, download it and install
         cli.action.stop(`开始更新${wantUpdatePkg}@${channelLatestVersion} (EUP)`);
         cli.action.start('正在下载与部署');
-        const pluginPath = await this.getPluginPath(wantUpdatePkg);
-        await download(eupUrl, pluginPath, {
+        await download(eupUrl, thisPlugin.root, {
           extract: true
         });
         cli.action.stop('完成！');
@@ -98,27 +105,7 @@ export default class Update extends Command {
     }
   }
 
-  async getNpmRoot() {
-    const {cmd} = lisa
-
-    const npmResult = await cmd('npm', [ 'root', '-g' ]);
-    return npmResult.stdout.replace("\n", '').replace("\r", '');
-  }
-
-  async getPluginVersion(pluginName: string) {
-    if (pluginName === '@listenai/lisa') {
-      return this.config.version
-    }
-
-    const {cmd} = lisa
-    const query = [ 'ls', pluginName, '--json', '-g' ];
-    const resultRaw = (await cmd('npm', query)).stdout;
-    const result = JSON.parse(resultRaw);
-
-    return result['dependencies'][pluginName]['version'] ?? '-.-.-';
-  }
-
-  async getEUPInfo(name: string, expectedVersion: string, isBeta: Number) {
+  async getEUPInfo(name: string, expectedVersion: string, isBeta: Number) : Promise<any> {
     const {got} = lisa
     let result: any = {};
 
@@ -140,9 +127,5 @@ export default class Update extends Command {
     } finally {
       return result
     }
-  }
-
-  async getPluginPath(name: string) {
-    return resolve(await this.getNpmRoot(), name);
   }
 }
