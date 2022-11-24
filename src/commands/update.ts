@@ -98,6 +98,13 @@ export default class Update extends Command {
     }
   }
 
+  async getNpmRoot() {
+    const {cmd} = lisa
+
+    const npmResult = await cmd('npm', [ 'root', '-g' ]);
+    return npmResult.stdout.replace("\n", '').replace("\r", '');
+  }
+
   async getPluginVersion(pluginName: string) {
     if (pluginName === '@listenai/lisa') {
       return this.config.version
@@ -136,6 +143,6 @@ export default class Update extends Command {
   }
 
   async getPluginPath(name: string) {
-    return resolve((process.env.LISA_HOME || ""), 'lisa', 'node_modules', name);
+    return resolve(await this.getNpmRoot(), name);
   }
 }
