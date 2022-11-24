@@ -3,7 +3,8 @@ import lisa from '@listenai/lisa_core'
 import compare from '../util/compare'
 import lpminit from '../util/lpminit'
 import download from '@xingrz/download2';
-import {getPlugin, getPluginByFriendlyName} from '../util/plugins'
+import {getNpmRoot, getPlugin, getPluginByFriendlyName, IPluginInfo} from '../util/plugins'
+import {resolve} from "path";
 
 export default class Update extends Command {
   static description = '更新lisa到最新版本'
@@ -38,17 +39,28 @@ export default class Update extends Command {
     }
 
     //check if this is friendly name
-    let thisPlugin = await getPlugin(args.plugin);
-    let currentVersion = thisPlugin !== undefined ? thisPlugin.version : '-.-.-';
-    if (currentVersion === '-.-.-') {
-      thisPlugin = await getPluginByFriendlyName(args.plugin);
-      if (thisPlugin === undefined) {
-        throw new Error('此插件并未安装!')
-      } else {
-        wantUpdatePkg = thisPlugin.name;
-        currentVersion = thisPlugin.version;
+    let currentVersion: string = '';
+    let thisPlugin: IPluginInfo;
+    if (args.plugin) {
+      thisPlugin = await getPlugin(args.plugin);
+      currentVersion = thisPlugin !== undefined ? thisPlugin.version : '-.-.-';
+      if (currentVersion === '-.-.-') {
+        thisPlugin = await getPluginByFriendlyName(args.plugin);
+        if (thisPlugin === undefined) {
+          throw new Error('此插件并未安装!')
+        } else {
+          wantUpdatePkg = thisPlugin.name;
+          currentVersion = thisPlugin.version;
+        }
+      }
+    } else {
+      currentVersion = this.config.version
+      thisPlugin = {
+        friendlyName: wantUpdatePkg, name: wantUpdatePkg, package: undefined, version: this.config.version,
+        root: resolve(await getNpmRoot(), '@listenai', 'lisa')
       }
     }
+
     this.debug('当前版本 %s', currentVersion)
 
     try {
