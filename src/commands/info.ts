@@ -25,6 +25,23 @@ export default class Info extends Command {
   async checkZephyrUpdate(currentVersion: string, latestVersion: string) {
     const { cli, cmd } = lisa
     if (compare(currentVersion, latestVersion) < 0) {
+
+      const {got} = lisa
+      let result: any = {};
+  
+      const requestUrl = `https://castor.iflyos.cn/castor/v3/lisaPlugin/version?name=@lisa-plugin/zephyr&version=${latestVersion}`;
+      try {
+        const {body}: {body: any} = await got(requestUrl, {
+          responseType: "json",
+          timeout: 3000
+        });
+        result = body.data.releaseNotes;
+      } catch (gotError) {
+      }
+      if (result) {
+        console.log(`=== Latest Relaese Notes ===`);
+        console.log(result.join('\n'));
+      }
       const isUpdate: boolean = await cli.confirm(`发现 'lisa zep 命令行工具' 有可更新的版本: ${latestVersion}，是否需要更新(Y/N )?`)
       if (isUpdate) {
         await cmd('lisa', ['update', 'zephyr'], { stdio: 'inherit' })

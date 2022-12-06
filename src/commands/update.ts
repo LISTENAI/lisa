@@ -9,7 +9,7 @@ import {resolve} from "path";
 export default class Update extends Command {
   static description = '更新lisa到最新版本'
 
-  static CASTOR_URL_PREFIX = 'https://staging-castor.iflyos.cn/castor/v3'
+  static CASTOR_URL_PREFIX = 'https://castor.iflyos.cn/castor/v3'
 
   static args = [
     {
