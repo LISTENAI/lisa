@@ -108,7 +108,7 @@ export async function getPluginByFriendlyName(friendlyName: string): Promise<IPl
   return pluginInfo;
 }
 
-async function getNpmRoot(): Promise<string> {
+export async function getNpmRoot(): Promise<string> {
   lisa.application.debug('getNpmRoot start');
   const npmRoot = await readLinkOrCreate(join(CACHE_DIR, 'npm-root.link'), async () => {
     lisa.application.debug('getNpmRoot not cached, resolving...');

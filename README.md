@@ -12,6 +12,20 @@ Lisa 是 Lisa Framework 核心命令行工具，提供模版生成能力以及�
 
 # Usage
 <!-- usage -->
+```sh-session
+$ npm install -g @listenai/lisa
+$ lisa COMMAND
+running command...
+$ lisa (-v|--version|version)
+@listenai/lisa/2.6.0-alpha.1 win32-x64 node-v16.18.0
+$ lisa --help [COMMAND]
+USAGE
+  $ lisa COMMAND
+...
+```
+<!-- usagestop -->
 
 # Commands
 <!-- commands -->
+
+<!-- commandsstop -->
