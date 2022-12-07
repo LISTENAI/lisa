@@ -27,7 +27,7 @@ export default class Info extends Command {
     if (compare(currentVersion, latestVersion) < 0) {
 
       const {got} = lisa
-      let result: any = {};
+      let result: any = null;
       const requestUrl = `https://castor.iflyos.cn/castor/v3/lisaPlugin/version?name=@lisa-plugin/zephyr&version=${latestVersion}&isBeta=0`;
       try {
         const {body}: {body: any} = await got(requestUrl, {
