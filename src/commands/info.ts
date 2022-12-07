@@ -28,8 +28,7 @@ export default class Info extends Command {
 
       const {got} = lisa
       let result: any = {};
-  
-      const requestUrl = `https://castor.iflyos.cn/castor/v3/lisaPlugin/version?name=@lisa-plugin/zephyr&version=${latestVersion}`;
+      const requestUrl = `https://castor.iflyos.cn/castor/v3/lisaPlugin/version?name=@lisa-plugin/zephyr&version=${latestVersion}&isBeta=0`;
       try {
         const {body}: {body: any} = await got(requestUrl, {
           responseType: "json",
@@ -39,7 +38,7 @@ export default class Info extends Command {
       } catch (gotError) {
       }
       if (result) {
-        console.log(`=== Latest Relaese Notes ===`);
+        console.log(`\x1B[32m=== Latest Relaese Notes ===\x1B[0m`);
         console.log(result.join('\n'));
       }
       const isUpdate: boolean = await cli.confirm(`发现 'lisa zep 命令行工具' 有可更新的版本: ${latestVersion}，是否需要更新(Y/N )?`)
