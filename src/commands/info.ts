@@ -70,7 +70,7 @@ export default class Info extends Command {
     } catch (error) {
       accountInfo = '未登录或登录已过期'
     }
-    this.log(`Account - ${accountInfo}\n`)
+    // this.log(`Account - ${accountInfo}\n`)
     this.log(
       'Node.js environment \n' +
       `  Node.js - ${await this.getVersion('node')}\n` +

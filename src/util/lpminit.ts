@@ -10,7 +10,7 @@ async function lpminit() {
   application.debug(lisaUserInfo)
   try {
     await Promise.all([
-      await cmd('npm', ['config', 'set', 'registry', process.env.LISA_NPM_REGISTRY || 'https://registry.npm.taobao.org']),
+      await cmd('npm', ['config', 'set', 'registry', process.env.LISA_NPM_REGISTRY || 'https://registry.npmmirror.com']),
       await cmd('npm', ['set', `${registry}/:username=${lisaUserInfo?.username}`]),
       await cmd('npm', ['set', `${registry}/:_password=${lisaUserInfo?.base64Token}`]),
       await cmd('npm', ['set', `${registry}/:email=${lisaUserInfo?.email}`]),
